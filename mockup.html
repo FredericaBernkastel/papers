@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frederica Bernkastel</title>
+<meta name="description" content="Papers and active research: counterpoint as a regular language, space filling as optimization over a compound distance field.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<!-- KaTeX: GitHub renders ```math in READMEs, but GitHub Pages serves plain
+     static HTML and does not. The LaTeX below is verbatim from the papers. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<style>
+/* ---- tokens ------------------------------------------------------------ */
+:root{
+  color-scheme: light;
+
+  --paper:       #f3f5f4;
+  --plate:       #ffffff;
+  --paper-2:     #e9edeb;
+  --ink:         #12211f;
+  --ink-mid:     #475956;
+  --ink-soft:    #7b8c88;
+  --rule:        #d3dbd7;
+  --rule-soft:   #e2e8e5;
+  --accent:      #1f6f63;
+  --accent-soft: #a3cbc2;
+
+  --sans: Alef, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --rail: 104px;
+  --gap:  32px;
+}
+
+/* ---- reset ------------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:400 17px/1.7 var(--sans);
+     -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,p,ul,ol,figure,blockquote,pre,table,dl,dd{margin:0}
+ul{padding:0;list-style:none}
+a{color:inherit}
+sup{font-size:.64em;line-height:0;vertical-align:.5em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* Alef ships 400/700 only and no italic: emphasis is weight, never a faux slant */
+em{font-style:normal;font-weight:700}
+
+/* ---- shell ------------------------------------------------------------- */
+.wrap{width:100%;max-width:980px;margin:0 auto;padding:0 32px}
+.view[hidden]{display:none}
+
+.site-head{border-bottom:1px solid var(--rule)}
+.site-head .wrap{display:flex;align-items:baseline;justify-content:space-between;
+                 gap:18px 32px;flex-wrap:wrap;padding-top:26px;padding-bottom:20px}
+.wordmark{font:700 19px/1 var(--sans);letter-spacing:-.005em;
+          text-decoration:none;color:var(--ink)}
+.nav{display:flex;gap:24px;font:400 11.5px/1 var(--mono);
+     letter-spacing:.12em;text-transform:uppercase}
+.nav a{color:var(--ink-mid);text-decoration:none;padding-bottom:3px;
+       border-bottom:1px solid transparent}
+.nav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+
+.site-main .wrap{display:flex;flex-direction:column;gap:84px;
+                 padding-top:56px;padding-bottom:88px}
+.section{display:flex;flex-direction:column;gap:32px}
+
+.site-foot{border-top:1px solid var(--rule)}
+.site-foot .wrap{display:flex;justify-content:space-between;gap:14px 32px;flex-wrap:wrap;
+                 padding-top:22px;padding-bottom:40px;
+                 font:400 11.5px/1.8 var(--mono);letter-spacing:.04em;color:var(--ink-soft)}
+.site-foot a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.site-foot a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap}
+.foot-note{flex:1 0 100%;padding-top:8px}
+
+/* ---- shared grid ------------------------------------------------------- */
+.row{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:var(--gap)}
+.entry{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);
+       gap:var(--gap) var(--gap);align-items:start}
+
+.rail{display:flex;flex-direction:column;gap:5px;padding-top:8px;
+      font:400 11px/1.5 var(--mono);letter-spacing:.07em;
+      text-transform:uppercase;color:var(--ink-soft)}
+.status{display:inline-flex;align-items:baseline;gap:7px;color:var(--ink-mid)}
+.status::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;
+                background:var(--accent);transform:translateY(-1px)}
+.status.is-open::before{background:transparent;box-shadow:inset 0 0 0 1px var(--ink-soft)}
+
+/* ---- rubric ------------------------------------------------------------ */
+.rubric{display:flex;align-items:center;gap:18px;
+        font:500 11px/1 var(--mono);letter-spacing:.17em;
+        text-transform:uppercase;color:var(--ink-soft)}
+.rubric::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+/* ---- hero -------------------------------------------------------------- */
+.hero{display:flex;flex-direction:column;}
+.thesis{font:700 40px/1.2 var(--sans);letter-spacing:-.022em;
+        text-wrap:balance;max-width:19ch}
+.hero-lede{font:400 12px/1.3 var(--sans);color:var(--ink-soft);max-width:58ch; text-align: justify;}
+
+.formulas{display:flex;flex-direction:column;gap:18px;margin-top:10px}
+.formula{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);
+         gap:var(--gap);align-items:start}
+.formula-key{font:400 11px/1.5 var(--mono);letter-spacing:.07em;
+             text-transform:uppercase;color:var(--ink-soft);padding-top:24px}
+.formula-body{display:flex;flex-direction:column;gap:11px;min-width:0}
+.formula-math{overflow-x:auto;overflow-y:hidden;padding:22px 26px;
+              background:var(--plate);border:1px solid var(--rule)}
+.formula-math .katex-display{margin:0}
+.formula-math .katex{color:var(--ink)}
+.gloss{font:400 14.5px/1.66 var(--sans);color:var(--ink-mid);max-width:62ch}
+.gloss cite{font-style:normal;color:var(--ink-soft)}
+
+/* ---- papers ------------------------------------------------------------ */
+.entry-body{display:flex;flex-direction:column;gap:15px;min-width:0}
+.entry-title{font:700 27px/1.3 var(--sans);letter-spacing:-.014em;text-wrap:balance}
+.entry-title a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+               text-decoration-thickness:1px;text-underline-offset:5px}
+.entry-title a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.entry-body p{font:400 16.5px/1.74 var(--sans);color:var(--ink-mid)}
+
+.terms{display:flex;flex-wrap:wrap;font:400 11px/1.8 var(--mono);
+       letter-spacing:.04em;color:var(--ink-soft)}
+.terms li+li::before{content:"\00b7";padding:0 .65em;color:var(--accent-soft)}
+
+.links{display:flex;flex-wrap:wrap;gap:6px 20px;
+       font:500 11.5px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.links a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.links a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* inline formula inside a paper entry */
+.entry-math{overflow-x:auto;overflow-y:hidden;padding:18px 22px;
+            background:var(--plate);border:1px solid var(--rule)}
+.entry-math .katex-display{margin:0}
+
+/* ---- figures: full width of the content column ------------------------- */
+.plate{grid-column:1 / -1;display:flex;flex-direction:column;gap:12px;
+       margin-top:8px;min-width:0}
+.plate-frame{border:1px solid var(--rule);background:var(--plate);
+             padding:18px 20px;overflow-x:auto}
+.plate-frame > svg,.plate-frame > a > img{width:100%;height:auto;min-width:660px}
+.plate-frame > a{display:block}
+.caption{font:400 10px/1.2 var(--mono);letter-spacing:.01em;color:var(--ink-soft)}
+.caption b{color:var(--ink-mid);font-weight:500}
+
+/* ---- list rows --------------------------------------------------------- */
+.list{display:flex;flex-direction:column}
+.list .row{padding:20px 0;border-top:1px solid var(--rule-soft)}
+.list .row:first-child{border-top:0;padding-top:2px}
+.row-body{display:flex;flex-direction:column;gap:9px;min-width:0}
+.row-title{font:700 17px/1.45 var(--sans)}
+.row-title a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+             text-decoration-thickness:1px;text-underline-offset:4px}
+.row-title a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.row-body p{font:400 15.5px/1.68 var(--sans);color:var(--ink-mid)}
+.stamp{font:400 11.5px/1.7 var(--mono);letter-spacing:.04em;color:var(--ink-soft);
+       font-variant-numeric:tabular-nums;padding-top:4px}
+.mono-name{font:500 15px/1.6 var(--mono);letter-spacing:-.01em;color:var(--ink)}
+
+/* ---- about ------------------------------------------------------------- */
+.about-body{display:flex;flex-direction:column;gap:14px;max-width:62ch}
+.about-body p{font:400 16.5px/1.76 var(--sans);color:var(--ink-mid)}
+.contact{display:grid;grid-template-columns:auto 1fr;gap:7px 24px;margin-top:8px;
+         font:400 12.5px/1.7 var(--mono);color:var(--ink-mid)}
+.contact dt{color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase;
+            font-size:11px;padding-top:2px}
+.contact a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.contact a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ---- article ----------------------------------------------------------- */
+.article{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:var(--gap)}
+.back{font:500 11.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+      color:var(--ink-soft);text-decoration:none;padding-top:10px;display:inline-block}
+.back:hover{color:var(--accent)}
+.prose{min-width:0}
+.prose > *{max-width:660px}
+.article-title{font:700 37px/1.22 var(--sans);letter-spacing:-.022em;
+               text-wrap:balance;margin-bottom:10px}
+.article-sub{font:400 18px/1.5 var(--sans);color:var(--ink-mid);margin-bottom:20px}
+.byline{display:flex;flex-wrap:wrap;gap:4px 16px;padding-bottom:22px;
+        border-bottom:1px solid var(--rule);
+        font:400 11.5px/1.7 var(--mono);letter-spacing:.05em;color:var(--ink-soft)}
+.byline a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.byline a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+.prose p{font:400 17px/1.78 var(--sans);margin-bottom:1.15em}
+.prose > p:first-of-type{margin-top:26px}
+.prose p.lede{font-size:18.5px;color:var(--ink-mid)}
+.prose h2{font:700 21px/1.36 var(--sans);letter-spacing:-.012em;margin:2em 0 .7em}
+.prose a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+         text-decoration-thickness:1px;text-underline-offset:3px}
+.prose a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+.prose .math-block{max-width:660px;overflow-x:auto;overflow-y:hidden;
+                   margin:1.5em 0 1.9em;padding:20px 24px;
+                   background:var(--plate);border:1px solid var(--rule)}
+.prose .math-block .katex-display{margin:0}
+
+pre{max-width:660px;margin:1.5em 0 1.9em;padding:18px 22px;
+    background:var(--plate);border:1px solid var(--rule);
+    overflow-x:auto;font:400 12.8px/1.72 var(--mono);color:var(--ink)}
+pre .cm{color:var(--ink-soft)}
+pre .kw{color:var(--accent)}
+
+.pull{margin:2em 0;padding:0 0 0 24px;border-left:2px solid var(--accent)}
+.pull p{font:400 19.5px/1.58 var(--sans);color:var(--ink);margin:0;text-wrap:balance}
+
+.prose .plate{grid-column:auto;max-width:none;margin:2em 0}
+
+.scroll{max-width:660px;overflow-x:auto;margin:1.5em 0 1.9em}
+.tbl{width:100%;border-collapse:collapse;font:400 12.6px/1.5 var(--mono);
+     font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--ink-soft);
+        padding:0 20px 9px 0;border-bottom:1px solid var(--rule)}
+.tbl td{padding:9px 20px 9px 0;border-bottom:1px solid var(--rule-soft);color:var(--ink-mid)}
+.tbl td:first-child{color:var(--ink);white-space:normal}
+.tbl .num{text-align:right;padding-right:0}
+.tbl th.num{text-align:right;padding-right:0}
+
+.fn{max-width:660px;margin-top:2.6em;padding-top:16px;border-top:1px solid var(--rule);
+    font:400 13.5px/1.72 var(--sans);color:var(--ink-mid)}
+
+/* ---- responsive -------------------------------------------------------- */
+@media (max-width:900px){
+  .entry,.row,.article,.formula{grid-template-columns:minmax(0,1fr);gap:18px}
+  .rail{flex-direction:row;flex-wrap:wrap;gap:4px 16px;padding-top:0}
+  .stamp,.back,.formula-key{padding-top:0}
+  .site-main .wrap{gap:66px}
+  .list .row:first-child{padding-top:4px}
+  .plate{margin-top:2px}
+}
+@media (max-width:560px){
+  .wrap{padding:0 20px}
+  .thesis{font-size:29px;max-width:none}
+  .entry-title{font-size:23px}
+  .article-title{font-size:28px}
+  .article-sub{font-size:16px}
+  .nav{gap:16px;font-size:11px}
+  .site-main .wrap{padding-top:40px;gap:56px}
+  .plate-frame{padding:12px 14px}
+  .formula-math{padding:18px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="wordmark" href="#" data-goto="index">Liserotte W.</a>
+    <ul class="terms" style="margin-right: auto;">
+      <li>independent researcher</li>
+    </ul>
+    <nav class="nav">
+      <a href="#papers"   data-goto="index">Papers</a>
+      <a href="#research" data-goto="index">Active work</a>
+      <a href="#about"    data-goto="index">About</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================ INDEX ============================ -->
+<main class="view site-main" data-view="index">
+<div class="wrap">
+
+  <section class="hero">
+    <p class="hero-lede">
+      <i>
+        The mind’s first step is to distinguish what is true from what is false. However, as soon as thought reflects on itself, what it first discovers is a contradiction.
+        &lt;...&gt;
+        The cat’s universe is not the universe of the anthill. The truism “All thought is anthropomorphic” has no other meaning. Likewise, the mind that aims to understand reality can consider itself satisfied only by reducing it to terms of thought.
+        If thought discovered in the infinite mirrors of phenomena eternal relations capable of summing them up and summing themselves up in a single principle, then would be seen an intellectual joy of which the myth of the blessed would be but a ridiculous imitation.<br>
+        ---------------------------------------------------------- <br>
+      </i>
+    </p>
+    <p class="hero-lede" style="text-align: right;">— A. Camus, The Myth of Sisyphus</p>
+  </section>
+
+  <section class="section" id="papers">
+    <h2 class="rubric"><span>Papers</span></h2>
+
+    <article class="entry">
+      <div class="rail">
+        <span class="status">Draft</span>
+        <span>2026</span>
+        <span>Whitepaper</span>
+      </div>
+      <div class="entry-body">
+        <h3 class="entry-title"><a href="#" data-goto="article">Contrapunctus: Counterpoint is a regular language</a></h3>
+        <div class="entry-math" style="font-size: small;">
+          $$
+          \begin{aligned}
+            \underbrace{
+              \mathrm{fugue}\big(
+                \underbrace{D}_{\text{material}},\;
+                \underbrace{\Lambda}_{\text{plan}},\;
+                \underbrace{\tau}_{\text{rulebook}},\;
+                \underbrace{s}_{\text{seed}}
+              \big)
+            }_{\text{sentence}}
+            \;&=\;
+            \underbrace{B}_{
+              \substack{
+                \mathrm{derive}(D,\Lambda)\\
+                \text{"symbols"}
+              }
+            }
+            \;\times\;
+            \underbrace{V}_{
+              \underbrace{
+                \begin{pmatrix}
+                  n_{1,1} & \cdots & n_{1,k_1}\\
+                  \vdots  &        & \vdots\\
+                  n_{m,1} & \cdots & n_{m,k_m}
+                \end{pmatrix}
+              }_{\text{notes per voice}}
+            }
+            \;\times\;
+            \underbrace{\mathrm{parse}(B)}_{
+              \substack{
+                \text{is sentence}\\
+                \text{grammatically}\\
+                \text{correct?}
+              }
+            }\;\times\;
+            \underbrace{\mathrm{check}_{\tau_2}(V)}_{\text{rulebook violations}}
+          \end{aligned}
+          $$
+        </div>
+        <p>Fugue is a word problem over a finite alphabet under constraints of bounded
+        memory, so the instruments are automata, dynamic programming and exact
+        combinatorial search &mdash; none of which need training data, and all of which
+        return proofs instead of samples. Counterpoint is a finite automaton whose state is
+        the interval together with its outstanding obligations.</p>
+        <ul class="terms">
+          <li>finite automata</li><li>maximum clique</li><li>Cayley graph</li>
+          <li>layered DAG</li><li>formal grammars</li><li>counterpoint</li>
+        </ul>
+        <ul class="links">
+          <li><a href="#" data-goto="article">Read</a></li>
+          <li><a href="https://github.com/FredericaBernkastel/contrapunctus-whitepaper">Repository &#8599;</a></li>
+        </ul>
+        <figure class="plate">
+        <div class="plate-frame"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 545" width="1480" height="545" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="#16202b" role="img" aria-label="Panel a: five statements of the BWV 867 subject on five voice lanes, entering at offsets 0, 2, 4, 6 and 8 quarters. Panel b: the same five placements as vertices of a graph; under the five-rule tier two of the ten pairs are inadmissible so the set is not a clique, and under the two-rule tier every pair is legal so it is."><text x="56.0" y="46.0" font-size="19" fill="#16202b" font-weight="700" letter-spacing="0.01em">(a)  The subject enters five times, two quarters apart</text><text x="56.0" y="71.0" font-size="13.5" fill="#5a6b7a">Bach, Well-Tempered Clavier I, BWV 867 — the five-voice hyperstretto</text><line x1="150.0" y1="104.0" x2="470.0" y2="104.0" stroke="#5a6b7a" stroke-width="1"/><line x1="150.0" y1="100.0" x2="150.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="150.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">0</text><line x1="230.0" y1="100.0" x2="230.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="230.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">2</text><line x1="310.0" y1="100.0" x2="310.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="310.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">4</text><line x1="390.0" y1="100.0" x2="390.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="390.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">6</text><line x1="470.0" y1="100.0" x2="470.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="470.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">8</text><text x="486.0" y="108.0" font-size="12" fill="#5a6b7a">entry offsets, quarters</text><rect x="138.0" y="106.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="140.0" x2="790.0" y2="140.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="144.0" font-size="13" fill="#5a6b7a" text-anchor="end">S</text><line x1="150.0" y1="108.0" x2="150.0" y2="106.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="150.0" cy="140.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 150.0 140.0)"/><line x1="155.8" y1="138.6" x2="155.8" y2="117.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="185.0" cy="118.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 185.0 118.0)"/><line x1="190.8" y1="116.6" x2="190.8" y2="95.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="220.0" cy="126.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 220.0 126.0)"/><line x1="225.8" y1="124.6" x2="225.8" y2="103.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="255.0" cy="132.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 255.0 132.0)"/><line x1="260.8" y1="130.6" x2="260.8" y2="109.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="290.0" cy="114.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 290.0 114.0)"/><line x1="295.8" y1="112.6" x2="295.8" y2="91.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="325.0" cy="122.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 325.0 122.0)"/><line x1="330.8" y1="120.6" x2="330.8" y2="99.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="360.0" cy="130.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 360.0 130.0)"/><line x1="365.8" y1="128.6" x2="365.8" y2="107.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="395.0" cy="136.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 395.0 136.0)"/><line x1="400.8" y1="134.6" x2="400.8" y2="113.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="218.0" y="180.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="214.0" x2="790.0" y2="214.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="218.0" font-size="13" fill="#5a6b7a" text-anchor="end">A1</text><line x1="230.0" y1="108.0" x2="230.0" y2="180.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="230.0" cy="214.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 230.0 214.0)"/><line x1="235.8" y1="212.6" x2="235.8" y2="191.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="265.0" cy="192.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 265.0 192.0)"/><line x1="270.8" y1="190.6" x2="270.8" y2="169.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="300.0" cy="200.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 300.0 200.0)"/><line x1="305.8" y1="198.6" x2="305.8" y2="177.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="335.0" cy="206.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 335.0 206.0)"/><line x1="340.8" y1="204.6" x2="340.8" y2="183.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="370.0" cy="188.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 370.0 188.0)"/><line x1="375.8" y1="186.6" x2="375.8" y2="165.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="405.0" cy="196.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 405.0 196.0)"/><line x1="410.8" y1="194.6" x2="410.8" y2="173.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="440.0" cy="204.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 440.0 204.0)"/><line x1="445.8" y1="202.6" x2="445.8" y2="181.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="475.0" cy="210.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 475.0 210.0)"/><line x1="480.8" y1="208.6" x2="480.8" y2="187.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="298.0" y="254.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="288.0" x2="790.0" y2="288.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="292.0" font-size="13" fill="#5a6b7a" text-anchor="end">A2</text><line x1="310.0" y1="108.0" x2="310.0" y2="254.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="310.0" cy="288.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 310.0 288.0)"/><line x1="315.8" y1="286.6" x2="315.8" y2="265.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="345.0" cy="266.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 345.0 266.0)"/><line x1="350.8" y1="264.6" x2="350.8" y2="243.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="380.0" cy="274.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 380.0 274.0)"/><line x1="385.8" y1="272.6" x2="385.8" y2="251.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="415.0" cy="280.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 415.0 280.0)"/><line x1="420.8" y1="278.6" x2="420.8" y2="257.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="450.0" cy="262.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 450.0 262.0)"/><line x1="455.8" y1="260.6" x2="455.8" y2="239.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="485.0" cy="270.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 485.0 270.0)"/><line x1="490.8" y1="268.6" x2="490.8" y2="247.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="520.0" cy="278.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 520.0 278.0)"/><line x1="525.8" y1="276.6" x2="525.8" y2="255.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="555.0" cy="284.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 555.0 284.0)"/><line x1="560.8" y1="282.6" x2="560.8" y2="261.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="378.0" y="328.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="362.0" x2="790.0" y2="362.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="366.0" font-size="13" fill="#5a6b7a" text-anchor="end">T</text><line x1="390.0" y1="108.0" x2="390.0" y2="328.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="390.0" cy="362.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 390.0 362.0)"/><line x1="395.8" y1="360.6" x2="395.8" y2="339.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="425.0" cy="340.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 425.0 340.0)"/><line x1="430.8" y1="338.6" x2="430.8" y2="317.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="460.0" cy="348.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 460.0 348.0)"/><line x1="465.8" y1="346.6" x2="465.8" y2="325.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="495.0" cy="354.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 495.0 354.0)"/><line x1="500.8" y1="352.6" x2="500.8" y2="331.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="530.0" cy="336.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 530.0 336.0)"/><line x1="535.8" y1="334.6" x2="535.8" y2="313.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="565.0" cy="344.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 565.0 344.0)"/><line x1="570.8" y1="342.6" x2="570.8" y2="321.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="600.0" cy="352.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 600.0 352.0)"/><line x1="605.8" y1="350.6" x2="605.8" y2="329.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="635.0" cy="358.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 635.0 358.0)"/><line x1="640.8" y1="356.6" x2="640.8" y2="335.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="458.0" y="402.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="436.0" x2="790.0" y2="436.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="440.0" font-size="13" fill="#5a6b7a" text-anchor="end">B</text><line x1="470.0" y1="108.0" x2="470.0" y2="402.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="470.0" cy="436.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 470.0 436.0)"/><line x1="475.8" y1="434.6" x2="475.8" y2="413.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="505.0" cy="414.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 505.0 414.0)"/><line x1="510.8" y1="412.6" x2="510.8" y2="391.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="540.0" cy="422.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 540.0 422.0)"/><line x1="545.8" y1="420.6" x2="545.8" y2="399.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="575.0" cy="428.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 575.0 428.0)"/><line x1="580.8" y1="426.6" x2="580.8" y2="405.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="610.0" cy="410.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 610.0 410.0)"/><line x1="615.8" y1="408.6" x2="615.8" y2="387.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="645.0" cy="418.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 645.0 418.0)"/><line x1="650.8" y1="416.6" x2="650.8" y2="395.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="680.0" cy="426.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 680.0 426.0)"/><line x1="685.8" y1="424.6" x2="685.8" y2="403.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="715.0" cy="432.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 715.0 432.0)"/><line x1="720.8" y1="430.6" x2="720.8" y2="409.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><line x1="150.0" y1="500.0" x2="790.0" y2="500.0" stroke="#16202b" stroke-width="1"/><line x1="150.0" y1="500.0" x2="150.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="150.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">0</text><line x1="230.0" y1="500.0" x2="230.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="230.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">2</text><line x1="310.0" y1="500.0" x2="310.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="310.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">4</text><line x1="390.0" y1="500.0" x2="390.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="390.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">6</text><line x1="470.0" y1="500.0" x2="470.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="470.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">8</text><line x1="550.0" y1="500.0" x2="550.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="550.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">10</text><line x1="630.0" y1="500.0" x2="630.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="630.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">12</text><line x1="710.0" y1="500.0" x2="710.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="710.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">14</text><line x1="790.0" y1="500.0" x2="790.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="790.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">16</text><text x="804.0" y="522.0" font-size="11.5" fill="#5a6b7a">quarters</text><text x="880.0" y="46.0" font-size="19" fill="#16202b" font-weight="700" letter-spacing="0.01em">(b)  The same five placements, under two tiers</text><text x="880.0" y="71.0" font-size="13.5" fill="#5a6b7a">vertices are placements on the shift group; an edge is a legal pair</text><line x1="1030.0" y1="188.0" x2="1108.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1030.0" y1="188.0" x2="1078.2" y2="336.3" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><line x1="1030.0" y1="188.0" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1030.0" y1="188.0" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="1078.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1078.2" y1="336.3" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1078.2" y1="336.3" x2="952.0" y2="244.7" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><line x1="981.8" y1="336.3" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><circle cx="1030.0" cy="188.0" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1030.0" y="192.5" font-size="12.5" fill="#16202b" text-anchor="middle">0</text><circle cx="1108.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1108.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">2</text><circle cx="1078.2" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1078.2" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">4</text><circle cx="981.8" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="981.8" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">6</text><circle cx="952.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="952.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">8</text><line x1="1300.0" y1="188.0" x2="1378.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1348.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1348.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1348.2" y1="336.3" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1348.2" y1="336.3" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1251.8" y1="336.3" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><circle cx="1300.0" cy="188.0" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1300.0" y="192.5" font-size="12.5" fill="#16202b" text-anchor="middle">0</text><circle cx="1378.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1378.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">2</text><circle cx="1348.2" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1348.2" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">4</text><circle cx="1251.8" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1251.8" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">6</text><circle cx="1222.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1222.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">8</text><rect x="934.0" y="382" width="192" height="52" fill="#fdf3f2"/><text x="1030.0" y="404" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">τ<tspan dy="4" font-size="10.5">5</tspan></text><text x="1030.0" y="424.0" font-size="12.5" fill="#b3261e" text-anchor="middle">not a clique</text><rect x="1204.0" y="382" width="192" height="52" fill="#e6eee7"/><text x="1300.0" y="404" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">τ<tspan dy="4" font-size="10.5">2</tspan></text><text x="1300.0" y="424.0" font-size="12.5" fill="#2e7d32" text-anchor="middle">a clique</text><line x1="920.0" y1="468.0" x2="956.0" y2="468.0" stroke="#2e7d32" stroke-width="1.4"/><text x="964.0" y="472.0" font-size="12" fill="#5a6b7a">legal pair</text><line x1="1082.0" y1="468.0" x2="1118.0" y2="468.0" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><text x="1126" y="472" font-size="12" fill="#5a6b7a">inadmissible under τ<tspan dy="3" font-size="9.5">5</tspan></text></svg></div>
+          <figcaption class="caption"><b>Figure 1.</b> The five-voice hyperstretto of BWV 867
+          and the rulebook tier that admits it. (a) Five statements of the subject at offsets
+          <b>{0, 2, 4, 6, 8}</b> quarters &mdash; an arithmetic progression, and a clique in a
+          Cayley graph on the shift group, emphatically not a Sidon set. (b) Under the full
+          five-rule tier two of the ten pairs are inadmissible and the passage is not a clique;
+          under the two-rule tier every pair is legal and it is. Two independent tests &mdash;
+          rule frequency across two centuries, and mutual compatibility in a single passage
+          &mdash; select the same two rules.</figcaption>
+      </figure>
+      </div>
+    </article>
+
+    <article class="entry">
+      <div class="rail">
+        <span class="status">Draft</span>
+        <span>2026</span>
+        <span>Preprint</span>
+      </div>
+      <div class="entry-body">
+        <h3 class="entry-title"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/readme.md">Beyond &#8477;<sup>N</sup>: space filling in infinite-dimensional function spaces</a></h3>
+        <ul class="terms">
+          <li>signed distance fields</li><li>Lipschitz branch-and-bound</li>
+          <li>covering numbers</li><li>Frank&#8211;Wolfe</li><li>greedy maximin</li>
+        </ul>
+        <ul class="links">
+          <li><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/readme.md">Read &#8599;</a></li>
+          <li><a href="https://github.com/FredericaBernkastel/space-filling">Repository &#8599;</a></li>
+        </ul>
+        <figure class="plate">
+          <div class="plate-frame"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/figures/fig1-readings.svg"><img alt="Figure 1. Four readings of &quot;infinite-dimensional&quot;: A the domain becomes a Hilbert ball or weighted ellipsoid; B each primitive&#x27;s boundary becomes a function; C the field itself becomes the variable, ranging over a lattice of 1-Lipschitz functions; D the field is drawn from a parametric family with a certified Lipschitz bound. A comparison table gives, for each, what is varied, where it lives, the form the gradient takes, whether the Lipschitz certificate survives, and what drives the cost." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDgwIDk0MCIgd2lkdGg9IjE0ODAiIGhlaWdodD0iOTQwIiBmb250LWZhbWlseT0iSGVsdmV0aWNhIE5ldWUsIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxNjIwMmIiPgo8dGl0bGU+Rm91ciByZWFkaW5ncyBvZiAiaW5maW5pdGUtZGltZW5zaW9uYWwiIGluIHRoZSBzcGFjZS1maWxsaW5nIHByb2JsZW08L3RpdGxlPgo8ZGVmcz4KICA8cmFkaWFsR3JhZGllbnQgaWQ9Imdsb3ciIGN4PSI1MCUiIGN5PSIxMjAlIiByPSI3NSUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzJmNmVhOCIgc3RvcC1vcGFjaXR5PSIuOTUiLz4KICAgIDxzdG9wIG9mZnNldD0iNDUlIiBzdG9wLWNvbG9yPSIjMWIzYTVjIiBzdG9wLW9wYWNpdHk9Ii41NSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGQxNzIxIiBzdG9wLW9wYWNpdHk9IjAiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxsaW5lYXJHcmFkaWVudCBpZD0iZmllbGRzdyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZkZWVkNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U4YTQ0YiIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPGZpbHRlciBpZD0ic29mdCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEzMCUiIGhlaWdodD0iMTQwJSI+CiAgICA8ZmVEcm9wU2hhZG93IGR4PSIwIiBkeT0iMiIgc3RkRGV2aWF0aW9uPSIzIiBmbG9vZC1jb2xvcj0iIzE2MjAyYiIgZmxvb2Qtb3BhY2l0eT0iLjEzIi8+CiAgPC9maWx0ZXI+CiAgPG1hcmtlciBpZD0iYXIiIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iOSIgcmVmWT0iNSIgbWFya2VyV2lkdGg9IjYuNSIgbWFya2VySGVpZ2h0PSI2LjUiIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj4KICAgIDxwYXRoIGQ9Ik0wLDAgTDEwLDUgTDAsMTAgeiIgZmlsbD0iIzE3Nzk2YiIvPgogIDwvbWFya2VyPgogIDxtYXJrZXIgaWQ9ImFyQiIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNiIgbWFya2VySGVpZ2h0PSI2IiBvcmllbnQ9ImF1dG8tc3RhcnQtcmV2ZXJzZSI+CiAgICA8cGF0aCBkPSJNMCwwIEwxMCw1IEwwLDEwIHoiIGZpbGw9IiNiMjZhMDAiLz4KICA8L21hcmtlcj4KICA8c3R5bGU+CiAgICAuaDF7IGZvbnQtc2l6ZTozNXB4OyBmb250LXdlaWdodDo3MDA7IGxldHRlci1zcGFjaW5nOjEuNnB4OyBmaWxsOiNmZmZmZmY7IH0KICAgIC5oMCAgeyBmb250LXNpemU6MTRweDsgZm9udC13ZWlnaHQ6NzAwOyBsZXR0ZXItc3BhY2luZzozLjRweDsgZmlsbDojN2ZiMGQ4OyB9CiAgICAuc3ViIHsgZm9udC1zaXplOjE1LjVweDsgZmlsbDojYjljZWRlOyB9CiAgICAucGggIHsgZm9udC1zaXplOjE3cHg7IGZvbnQtd2VpZ2h0OjcwMDsgZmlsbDojZmZmZmZmOyB9CiAgICAuYmRnIHsgZm9udC1zaXplOjE1cHg7IGZvbnQtd2VpZ2h0OjcwMDsgfQogICAgLnBsICB7IGZvbnQtc2l6ZToxMi42cHg7IGZpbGw6IzNkNGQ1YzsgfQogICAgLmFydCB7IGZvbnQtc2l6ZToxMS42cHg7IGZpbGw6IzVhNmI3YTsgfQogICAgLmFydGJ7IGZvbnQtc2l6ZToxMS42cHg7IGZvbnQtd2VpZ2h0OjcwMDsgfQogICAgLnZrICB7IGZvbnQtc2l6ZTo5LjZweDsgZm9udC13ZWlnaHQ6NzAwOyBsZXR0ZXItc3BhY2luZzoxLjVweDsgfQogICAgLnZ0ICB7IGZvbnQtc2l6ZToxNC4ycHg7IGZvbnQtd2VpZ2h0OjcwMDsgfQogICAgLnRoLCAudGggdGV4dCB7IGZvbnQtc2l6ZToxMi40cHg7IGZvbnQtd2VpZ2h0OjcwMDsgbGV0dGVyLXNwYWNpbmc6LjlweDsgZmlsbDojZmZmZmZmOyB9CiAgICAucmwgIHsgZm9udC1zaXplOjEyLjZweDsgZm9udC13ZWlnaHQ6NzAwOyBmaWxsOiMxNjIwMmI7IH0KICAgIC50ZCAgeyBmb250LXNpemU6MTIuM3B4OyBmaWxsOiMyYjM5NDU7IH0KICAgIC5tdCAgeyBmb250LWZhbWlseTpHZW9yZ2lhLCdUaW1lcyBOZXcgUm9tYW4nLHNlcmlmOyBmb250LXN0eWxlOml0YWxpYzsgfQogICAgLmNhcCB7IGZvbnQtZmFtaWx5Okdlb3JnaWEsJ1RpbWVzIE5ldyBSb21hbicsc2VyaWY7IGZvbnQtc2l6ZToxMy4ycHg7IGZpbGw6IzRiNWI2YTsgfQogICAgLmF4ICB7IHN0cm9rZTojOTRhNWI0OyBzdHJva2Utd2lkdGg6MTsgZmlsbDpub25lOyB9CiAgPC9zdHlsZT4KPC9kZWZzPgoKPHJlY3Qgd2lkdGg9IjE0ODAiIGhlaWdodD0iOTQwIiBmaWxsPSIjZmZmZmZmIi8+Cgo8IS0tID09PT09PT09PT09PT09PT09IGhlYWRlciA9PT09PT09PT09PT09PT09PSAtLT4KPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjE0ODAiIGhlaWdodD0iMTE4IiBmaWxsPSIjMGQxNzIxIi8+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxNDgwIiBoZWlnaHQ9IjExOCIgZmlsbD0idXJsKCNnbG93KSIvPgo8dGV4dCBjbGFzcz0iaDAiIHg9IjMyIiB5PSIzMCI+RklHVVJFIDE8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJoMSIgeD0iNzQwIiB5PSI2MiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+V0hFUkUgRE9FUyBUSEUgSU5GSU5JVEUgRElNRU5TSU9OIExJVkU/PC90ZXh0Pgo8dGV4dCBjbGFzcz0ic3ViIiB4PSI3NDAiIHk9IjkyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5PbmUgcGhyYXNlLCBmb3VyIGRpc3RpbmN0IHByb2dyYW1tZXMg4oCUIGVhY2ggd2l0aCBpdHMgb3duIG9wdGltaXplciwgaXRzIG93biBjb3N0IGRyaXZlciwgYW5kIGl0cyBvd24gdmVyZGljdDwvdGV4dD4KCjwhLS0gPT09PT09PT09PT09PT09PT0gcGFuZWwgQSA9PT09PT09PT09PT09PT09PSAtLT4KPGcgZmlsdGVyPSJ1cmwoI3NvZnQpIj4KICA8cmVjdCB4PSIzMiIgeT0iMTQ2IiB3aWR0aD0iMzM5IiBoZWlnaHQ9IjM2NCIgcng9IjgiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2Q1ZGVlNiIvPgo8L2c+CjxwYXRoIGQ9Ik0zMiAxOTAgVjE1NCBRMzIgMTQ2IDQwIDE0NiBIMzYzIFEzNzEgMTQ2IDM3MSAxNTQgVjE5MCBaIiBmaWxsPSIjMmM1YWEwIi8+CjxjaXJjbGUgY3g9IjU4IiBjeT0iMTY4IiByPSIxNSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCBjbGFzcz0iYmRnIiB4PSI1OCIgeT0iMTczIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmM1YWEwIj5BPC90ZXh0Pgo8dGV4dCBjbGFzcz0icGgiIHg9Ijg0IiB5PSIxNzQiPlRoZSBkb21haW48L3RleHQ+CjxyZWN0IHg9IjMzIiB5PSIxOTAiIHdpZHRoPSIzMzciIGhlaWdodD0iMTc2IiBmaWxsPSIjZjdmYWZkIi8+CjwhLS0gZGVjYXlpbmcgd2VpZ2h0IHNwZWN0cnVtIC0tPgo8Zz4KICA8cGF0aCBjbGFzcz0iYXgiIGQ9Ik03NCAzMzIgSDMxNiIvPgogIDxwYXRoIGNsYXNzPSJheCIgZD0iTTc0IDMzMiBWMjIyIi8+CiAgPHJlY3QgeD0iODIiICB5PSIyNDAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI5MiIgZmlsbD0iIzJjNWFhMCIvPgogIDxyZWN0IHg9IjExMiIgeT0iMjc1IiB3aWR0aD0iMTgiIGhlaWdodD0iNTciIGZpbGw9IiMzZjZjYWUiLz4KICA8cmVjdCB4PSIxNDIiIHk9IjI5NyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjM1IiBmaWxsPSIjNWI4NWMwIi8+CiAgPHJlY3QgeD0iMTcyIiB5PSIzMTAiIHdpZHRoPSIxOCIgaGVpZ2h0PSIyMiIgZmlsbD0iIzdiYTBjZSIvPgogIDxyZWN0IHg9IjIwMiIgeT0iMzE4IiB3aWR0aD0iMTgiIGhlaWdodD0iMTQiIGZpbGw9IiM5YmI4ZGMiLz4KICA8cmVjdCB4PSIyMzIiIHk9IjMyNCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjgiICBmaWxsPSIjYjdjZGU4Ii8+CiAgPHJlY3QgeD0iMjYyIiB5PSIzMjciIHdpZHRoPSIxOCIgaGVpZ2h0PSI1IiAgZmlsbD0iI2NmZGVmMSIvPgogIDxyZWN0IHg9IjI5MiIgeT0iMzI5IiB3aWR0aD0iMTgiIGhlaWdodD0iMyIgIGZpbGw9IiNlMmVjZjciLz4KICA8cGF0aCBkPSJNOTEgMjQwIEMgMTIxIDI2OCAxNTEgMjk2IDE4MSAzMTAgQyAyMjEgMzIyIDI2MSAzMjggMzAxIDMzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTYyMDJiIiBzdHJva2Utd2lkdGg9IjEuMyIgc3Ryb2tlLWRhc2hhcnJheT0iNCAzIi8+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iOTEiICB5PSIzNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPs6z4oKBPC90ZXh0PgogIDx0ZXh0IGNsYXNzPSJhcnQiIHg9IjEyMSIgeT0iMzQ1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7Os+KCgjwvdGV4dD4KICA8dGV4dCBjbGFzcz0iYXJ0IiB4PSIxNTEiIHk9IjM0NSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+zrPigoM8L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iMjU1IiB5PSIzNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmNvb3JkaW5hdGUgaW5kZXggaiDihpI8L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iNjYiIHk9IjIyOCIgdGV4dC1hbmNob3I9ImVuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTkwIDY2IDIyOCkiPndlaWdodDwvdGV4dD4KICA8ZWxsaXBzZSBjeD0iMjcyIiBjeT0iMjQwIiByeD0iNDYiIHJ5PSIxMyIgZmlsbD0iI2RmZTlmNiIgc3Ryb2tlPSIjMmM1YWEwIiBzdHJva2Utd2lkdGg9IjEuNCIvPgogIDx0ZXh0IGNsYXNzPSJhcnRiIiB4PSIyNzIiIHk9IjIyMSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJjNWFhMCI+zqkgY29tcGFjdDwvdGV4dD4KICA8dGV4dCBjbGFzcz0iYXJ0IiB4PSIyNzIiIHk9IjI2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGNsYXNzPSJtdCI+zqMgzrM8L3RzcGFuPjx0c3BhbiBjbGFzcz0ibXQiIGZvbnQtc2l6ZT0iOSI+ajwvdHNwYW4+PHRzcGFuIGNsYXNzPSJtdCI+ICZsdDsg4oiePC90c3Bhbj48L3RleHQ+CjwvZz4KPHRleHQgY2xhc3M9InBsIiB4PSI0OCIgeT0iMzkwIj7OqSBpcyBhIGJhbGwsIG9yIGFuIGVsbGlwc29pZCwgaW4gYSBIaWxiZXJ0IHNwYWNlLiBUaGU8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNDgiIHk9IjQwOCI+Y2VydGlmaWNhdGUgaXMgYSBjb3ZlcmluZyBhcmd1bWVudCwgc28gaXQgbGl2ZXMgb3IgZGllczwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSI0OCIgeT0iNDI2Ij5vbiB3aGV0aGVyIM6pIGlzIGNvbXBhY3Qg4oCUIHRoYXQgaXMsIG9uIHRoZSB3ZWlnaHRzLjwvdGV4dD4KPHJlY3QgeD0iMzMiIHk9IjQ0NCIgd2lkdGg9IjMzNyIgaGVpZ2h0PSI2NSIgZmlsbD0iI2VhZjFmYSIvPgo8cmVjdCB4PSIzMyIgeT0iNDQ0IiB3aWR0aD0iNCIgaGVpZ2h0PSI2NSIgZmlsbD0iIzJjNWFhMCIvPgo8dGV4dCBjbGFzcz0idmsiIHg9IjUwIiB5PSI0NjYiIGZpbGw9IiMyYzVhYTAiPlZFUkRJQ1Q8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJ2dCIgeD0iNTAiIHk9IjQ4OCI+SGFyZGVzdDwvdGV4dD4KPHRleHQgY2xhc3M9ImFydCIgeD0iMTQwIiB5PSI0ODgiPuKAlCBuZWVkcyB3ZWlnaHRzIHRvIGJlIHRyYWN0YWJsZSBhdCBhbGw8L3RleHQ+Cgo8IS0tID09PT09PT09PT09PT09PT09IHBhbmVsIEIgPT09PT09PT09PT09PT09PT0gLS0+CjxnIGZpbHRlcj0idXJsKCNzb2Z0KSI+CiAgPHJlY3QgeD0iMzkxIiB5PSIxNDYiIHdpZHRoPSIzMzkiIGhlaWdodD0iMzY0IiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjZDVkZWU2Ii8+CjwvZz4KPHBhdGggZD0iTTM5MSAxOTAgVjE1NCBRMzkxIDE0NiAzOTkgMTQ2IEg3MjIgUTczMCAxNDYgNzMwIDE1NCBWMTkwIFoiIGZpbGw9IiMxNzc5NmIiLz4KPGNpcmNsZSBjeD0iNDE3IiBjeT0iMTY4IiByPSIxNSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCBjbGFzcz0iYmRnIiB4PSI0MTciIHk9IjE3MyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzE3Nzk2YiI+QjwvdGV4dD4KPHRleHQgY2xhc3M9InBoIiB4PSI0NDMiIHk9IjE3NCI+VGhlIHByaW1pdGl2ZXM8L3RleHQ+CjxyZWN0IHg9IjM5MiIgeT0iMTkwIiB3aWR0aD0iMzM3IiBoZWlnaHQ9IjE3NiIgZmlsbD0iI2Y2ZmJmYSIvPgo8IS0tIHNoYXBlIHdpdGggbm9ybWFsLXNwZWVkIGFycm93cyAtLT4KPGc+CiAgPGVsbGlwc2UgY3g9IjU0MSIgY3k9IjI3MiIgcng9Ijc0IiByeT0iNjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzE3Nzk2YiIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjUgNCIgb3BhY2l0eT0iLjc1Ii8+CiAgPGNpcmNsZSBjeD0iNTQxIiBjeT0iMjcyIiByPSI1NiIgZmlsbD0iI2RmZjBlZCIgc3Ryb2tlPSIjMTc3OTZiIiBzdHJva2Utd2lkdGg9IjIuMiIvPgogIDxnIHN0cm9rZT0iIzE3Nzk2YiIgc3Ryb2tlLXdpZHRoPSIxLjkiIG1hcmtlci1lbmQ9InVybCgjYXIpIj4KICAgIDxwYXRoIGQ9Ik01OTkgMjcyIEg2MjUiLz4KICAgIDxwYXRoIGQ9Ik01OTEgMjQzIEw2MDggMjMzIi8+CiAgICA8cGF0aCBkPSJNNTcwIDIyMiBMNTc2IDIxMSIvPgogICAgPHBhdGggZD0iTTU0MSAyMTQgVjIwNiIvPgogICAgPHBhdGggZD0iTTUxMiAyMjIgTDUwNSAyMTAiLz4KICAgIDxwYXRoIGQ9Ik00OTEgMjQzIEw0NzIgMjMyIi8+CiAgICA8cGF0aCBkPSJNNDgzIDI3MiBINDU1Ii8+CiAgICA8cGF0aCBkPSJNNDkxIDMwMSBMNDcwIDMxMyIvPgogICAgPHBhdGggZD0iTTUxMiAzMjIgTDUwNCAzMzYiLz4KICAgIDxwYXRoIGQ9Ik01NDEgMzMwIFYzNDAiLz4KICAgIDxwYXRoIGQ9Ik01NzAgMzIyIEw1NzcgMzM0Ii8+CiAgICA8cGF0aCBkPSJNNTkxIDMwMSBMNjA4IDMxMSIvPgogIDwvZz4KICA8dGV4dCBjbGFzcz0iYXJ0YiIgeD0iNTQxIiB5PSIyNzciIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwZjVkNTIiPuKIgs6pPC90ZXh0PgogIDx0ZXh0IGNsYXNzPSJhcnQiIHg9IjY0NiIgeT0iMjEyIj5kZWZvcm1hdGlvbjwvdGV4dD4KICA8dGV4dCBjbGFzcz0iYXJ0IiB4PSI2NDYiIHk9IjIyNyI+PHRzcGFuIGNsYXNzPSJtdCI+ViDCtyBuPC90c3Bhbj4gb25seTwvdGV4dD4KICA8dGV4dCBjbGFzcz0iYXJ0IiB4PSI1NDEiIHk9IjM1OCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+aW5maW5pdGVseSBtYW55IGRlZ3JlZXMgb2YgZnJlZWRvbSBjb2xsYXBzZTwvdGV4dD4KPC9nPgo8dGV4dCBjbGFzcz0icGwiIHg9IjQwNyIgeT0iMzkwIj5FYWNoIHByaW1pdGl2ZSdzIGJvdW5kYXJ5IGlzIGEgZnVuY3Rpb24g4oCUIGEgcmFkaWFsPC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjQwNyIgeT0iNDA4Ij5wcm9maWxlIGluIEzCsiwgYSBwYXRoIGluIEjCuS4gSGFkYW1hcmQncyB0aGVvcmVtPC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjQwNyIgeT0iNDI2Ij5yZWR1Y2VzIHRoZSBkZXJpdmF0aXZlIHRvIG9uZSBzY2FsYXIgZmllbGQgb24g4oiCzqkuPC90ZXh0Pgo8cmVjdCB4PSIzOTIiIHk9IjQ0NCIgd2lkdGg9IjMzNyIgaGVpZ2h0PSI2NSIgZmlsbD0iI2U2ZjRmMSIvPgo8cmVjdCB4PSIzOTIiIHk9IjQ0NCIgd2lkdGg9IjQiIGhlaWdodD0iNjUiIGZpbGw9IiMxNzc5NmIiLz4KPHRleHQgY2xhc3M9InZrIiB4PSI0MDkiIHk9IjQ2NiIgZmlsbD0iIzBmNWQ1MiI+VkVSRElDVDwvdGV4dD4KPHRleHQgY2xhc3M9InZ0IiB4PSI0MDkiIHk9IjQ4OCI+TW9zdCB1c2VmdWw8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJhcnQiIHg9IjUxOSIgeT0iNDg4Ij7igJQgY2xhc3NpY2FsIGdyYWRpZW50IG1ldGhvZHMgYXBwbHk8L3RleHQ+Cgo8IS0tID09PT09PT09PT09PT09PT09IHBhbmVsIEMgPT09PT09PT09PT09PT09PT0gLS0+CjxnIGZpbHRlcj0idXJsKCNzb2Z0KSI+CiAgPHJlY3QgeD0iNzUwIiB5PSIxNDYiIHdpZHRoPSIzMzkiIGhlaWdodD0iMzY0IiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjZDVkZWU2Ii8+CjwvZz4KPHBhdGggZD0iTTc1MCAxOTAgVjE1NCBRNzUwIDE0NiA3NTggMTQ2IEgxMDgxIFExMDg5IDE0NiAxMDg5IDE1NCBWMTkwIFoiIGZpbGw9IiM2YTNkOWEiLz4KPGNpcmNsZSBjeD0iNzc2IiBjeT0iMTY4IiByPSIxNSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCBjbGFzcz0iYmRnIiB4PSI3NzYiIHk9IjE3MyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZhM2Q5YSI+QzwvdGV4dD4KPHRleHQgY2xhc3M9InBoIiB4PSI4MDIiIHk9IjE3NCI+VGhlIHN0YXRlPC90ZXh0Pgo8cmVjdCB4PSI3NTEiIHk9IjE5MCIgd2lkdGg9IjMzNyIgaGVpZ2h0PSIxNzYiIGZpbGw9IiNmYWY3ZmQiLz4KPCEtLSBtb25vdG9uZSBzYXd0b290aCBkZXNjZW50IC0tPgo8Zz4KICA8cGF0aCBjbGFzcz0iYXgiIGQ9Ik03ODAgMzQwIEgxMDU5Ii8+CiAgPHBvbHlsaW5lIHBvaW50cz0iNzgwLDM0MCA5MTkuNSwyMzAgMTA1OSwzNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NiYjNlNCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHBvbHlsaW5lIHBvaW50cz0iNzgwLDM0MCA4NDkuNywyODUgOTE5LjUsMzQwIDk4OS4yLDI4NSAxMDU5LDM0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWE3MmM3IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cG9seWxpbmUgcG9pbnRzPSI3ODAsMzQwIDgxNC45LDMxMi41IDg0OS43LDM0MCA4ODQuNiwzMTIuNSA5MTkuNSwzNDAgOTU0LjQsMzEyLjUgOTg5LjIsMzQwIDEwMjQuMSwzMTIuNSAxMDU5LDM0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGIyNDcyIiBzdHJva2Utd2lkdGg9IjIuMiIvPgogIDxjaXJjbGUgY3g9IjkxOS41IiBjeT0iMzQwIiByPSIzLjQiIGZpbGw9IiM0YjI0NzIiLz4KICA8Y2lyY2xlIGN4PSI4NDkuNyIgY3k9IjM0MCIgcj0iMy40IiBmaWxsPSIjNGIyNDcyIi8+CiAgPGNpcmNsZSBjeD0iOTg5LjIiIGN5PSIzNDAiIHI9IjMuNCIgZmlsbD0iIzRiMjQ3MiIvPgogIDxnIHN0cm9rZS13aWR0aD0iMi40Ij4KICAgIDxwYXRoIGQ9Ik03ODIgMjA4IEg4MDYiIHN0cm9rZT0iI2NiYjNlNCIvPgogICAgPHBhdGggZD0iTTc4MiAyMjQgSDgwNiIgc3Ryb2tlPSIjOWE3MmM3Ii8+CiAgICA8cGF0aCBkPSJNNzgyIDI0MCBIODA2IiBzdHJva2U9IiM0YjI0NzIiLz4KICA8L2c+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iODEyIiB5PSIyMTIiPmfigoAg4oCUIGJvdW5kYXJ5IG9ubHk8L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iODEyIiB5PSIyMjgiPmfigoEg4oCUIG9uZSBpbnNlcnRpb248L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iODEyIiB5PSIyNDQiPmfigoIg4oCUIHRocmVlIGluc2VydGlvbnM8L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iMTA1MiIgeT0iMjcwIiB0ZXh0LWFuY2hvcj0iZW5kIj5n4oKAIOKJpSBn4oKBIOKJpSBn4oKCIOKJpSDigKY8L3RleHQ+CiAgPHRleHQgY2xhc3M9ImFydCIgeD0iOTE5IiB5PSIzNTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmluc2VydGlvbiBvbmx5IGV2ZXIgbG93ZXJzIHRoZSBmaWVsZDwvdGV4dD4KPC9nPgo8dGV4dCBjbGFzcz0icGwiIHg9Ijc2NiIgeT0iMzkwIj5UaGUgZmllbGQgaXRzZWxmIGlzIHRoZSB2YXJpYWJsZSwgcmFuZ2luZyBvdmVyIHRoZTwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSI3NjYiIHk9IjQwOCI+MS1MaXBzY2hpdHogZnVuY3Rpb25zIOKAlCBhIGxhdHRpY2UuIEdyZWVkeSBpbnNlcnRpb248L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNzY2IiB5PSI0MjYiPmlzIHRoZW4gY29uZGl0aW9uYWwgZ3JhZGllbnQsIG5vdCBhIGhldXJpc3RpYy48L3RleHQ+CjxyZWN0IHg9Ijc1MSIgeT0iNDQ0IiB3aWR0aD0iMzM3IiBoZWlnaHQ9IjY1IiBmaWxsPSIjZjBlOWY4Ii8+CjxyZWN0IHg9Ijc1MSIgeT0iNDQ0IiB3aWR0aD0iNCIgaGVpZ2h0PSI2NSIgZmlsbD0iIzZhM2Q5YSIvPgo8dGV4dCBjbGFzcz0idmsiIHg9Ijc2OCIgeT0iNDY2IiBmaWxsPSIjNmEzZDlhIj5WRVJESUNUPC90ZXh0Pgo8dGV4dCBjbGFzcz0idnQiIHg9Ijc2OCIgeT0iNDg4Ij5FeHBsYW5hdG9yeTwvdGV4dD4KPHRleHQgY2xhc3M9ImFydCIgeD0iODc4IiB5PSI0ODgiPuKAlCBzYXlzIHdoeSBncmVlZHkgd29ya3MgYXQgYWxsPC90ZXh0PgoKPCEtLSA9PT09PT09PT09PT09PT09PSBwYW5lbCBEID09PT09PT09PT09PT09PT09IC0tPgo8ZyBmaWx0ZXI9InVybCgjc29mdCkiPgogIDxyZWN0IHg9IjExMDkiIHk9IjE0NiIgd2lkdGg9IjMzOSIgaGVpZ2h0PSIzNjQiIHJ4PSI4IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNkNWRlZTYiLz4KPC9nPgo8cGF0aCBkPSJNMTEwOSAxOTAgVjE1NCBRMTEwOSAxNDYgMTExNyAxNDYgSDE0NDAgUTE0NDggMTQ2IDE0NDggMTU0IFYxOTAgWiIgZmlsbD0iI2IyNmEwMCIvPgo8Y2lyY2xlIGN4PSIxMTM1IiBjeT0iMTY4IiByPSIxNSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCBjbGFzcz0iYmRnIiB4PSIxMTM1IiB5PSIxNzMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNiMjZhMDAiPkQ8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwaCIgeD0iMTE2MSIgeT0iMTc0Ij5UaGUgcmVwcmVzZW50YXRpb248L3RleHQ+CjxyZWN0IHg9IjExMTAiIHk9IjE5MCIgd2lkdGg9IjMzNyIgaGVpZ2h0PSIxNzYiIGZpbGw9IiNmZGZhZjUiLz4KPCEtLSBwYXJhbWV0cmljIGZpZWxkIGZhbWlseSAtLT4KPGc+CiAgPGcgc3Ryb2tlPSIjZTBjNjliIiBzdHJva2Utd2lkdGg9IjEiPgogICAgPHBhdGggZD0iTTExNjAgMjQwIEwxMjI1IDIxOCBNMTE2MCAyNDAgTDEyMjUgMjU0IE0xMTYwIDI0MCBMMTIyNSAyOTAgTTExNjAgMjQwIEwxMjI1IDMyNiIvPgogICAgPHBhdGggZD0iTTExNjAgMjcyIEwxMjI1IDIxOCBNMTE2MCAyNzIgTDEyMjUgMjU0IE0xMTYwIDI3MiBMMTIyNSAyOTAgTTExNjAgMjcyIEwxMjI1IDMyNiIvPgogICAgPHBhdGggZD0iTTExNjAgMzA0IEwxMjI1IDIxOCBNMTE2MCAzMDQgTDEyMjUgMjU0IE0xMTYwIDMwNCBMMTIyNSAyOTAgTTExNjAgMzA0IEwxMjI1IDMyNiIvPgogICAgPHBhdGggZD0iTTEyMjUgMjE4IEwxMjkwIDI3MiBNMTIyNSAyNTQgTDEyOTAgMjcyIE0xMjI1IDI5MCBMMTI5MCAyNzIgTTEyMjUgMzI2IEwxMjkwIDI3MiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNiMjZhMDAiIHN0cm9rZS13aWR0aD0iMS42Ij4KICAgIDxjaXJjbGUgY3g9IjExNjAiIGN5PSIyNDAiIHI9IjYiLz48Y2lyY2xlIGN4PSIxMTYwIiBjeT0iMjcyIiByPSI2Ii8+PGNpcmNsZSBjeD0iMTE2MCIgY3k9IjMwNCIgcj0iNiIvPgogICAgPGNpcmNsZSBjeD0iMTIyNSIgY3k9IjIxOCIgcj0iNiIvPjxjaXJjbGUgY3g9IjEyMjUiIGN5PSIyNTQiIHI9IjYiLz48Y2lyY2xlIGN4PSIxMjI1IiBjeT0iMjkwIiByPSI2Ii8+PGNpcmNsZSBjeD0iMTIyNSIgY3k9IjMyNiIgcj0iNiIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSIxMjkwIiBjeT0iMjcyIiByPSI3LjUiIGZpbGw9IiNiMjZhMDAiLz4KICA8cGF0aCBkPSJNMTMwMiAyNzIgSDEzMzAiIHN0cm9rZT0iI2IyNmEwMCIgc3Ryb2tlLXdpZHRoPSIxLjkiIG1hcmtlci1lbmQ9InVybCgjYXJCKSIvPgogIDxyZWN0IHg9IjEzNDAiIHk9IjIzOCIgd2lkdGg9Ijc2IiBoZWlnaHQ9IjY4IiByeD0iNCIgZmlsbD0idXJsKCNmaWVsZHN3KSIgc3Ryb2tlPSIjYjI2YTAwIiBzdHJva2Utd2lkdGg9IjEuNCIvPgogIDxwYXRoIGQ9Ik0xMzUyIDI5MiBRMTM3OCAyNTggMTQwNCAyOTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdhNDYwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICA8cGF0aCBkPSJNMTM1MiAzMDIgUTEzNzggMjcyIDE0MDQgMzAyIiBmaWxsPSJub25lIiBzdHJva2U9IiM3YTQ2MDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iLjU1Ii8+CiAgPHRleHQgY2xhc3M9ImFydGIiIHg9IjEzNzgiIHk9IjIyOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdhNDYwMCI+bGVhcm5lZCBmaWVsZDwvdGV4dD4KICA8cmVjdCB4PSIxMTYwIiB5PSIzMzYiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjIiIHJ4PSIxMSIgZmlsbD0iI2Y2ZTNjNCIgc3Ryb2tlPSIjYjI2YTAwIiBzdHJva2Utd2lkdGg9IjEuMSIvPgogIDx0ZXh0IGNsYXNzPSJhcnQiIHg9IjEyNjAiIHk9IjM1MSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdhNDYwMCI+4oCW4oiHZuKAliDiiaQgTCBjZXJ0aWZpZWQgYnkgY29uc3RydWN0aW9uPC90ZXh0Pgo8L2c+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iMTEyNSIgeT0iMzkwIj5UaGUgZmllbGQgaXMgZHJhd24gZnJvbSBhIHBhcmFtZXRyaWMgZmFtaWx5IOKAlCBhbjwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSIxMTI1IiB5PSI0MDgiPmltcGxpY2l0IG5ldHdvcmsuIEEgbm9ybS1jb25zdHJhaW5lZCBhcmNoaXRlY3R1cmU8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iMTEyNSIgeT0iNDI2Ij55aWVsZHMgYW4gaG9uZXN0IEwsIHdoaWNoIGlzIGFsbCB0aGUgY3JhdGUgcmVxdWlyZXMuPC90ZXh0Pgo8cmVjdCB4PSIxMTEwIiB5PSI0NDQiIHdpZHRoPSIzMzciIGhlaWdodD0iNjUiIGZpbGw9IiNmZGYwZGMiLz4KPHJlY3QgeD0iMTExMCIgeT0iNDQ0IiB3aWR0aD0iNCIgaGVpZ2h0PSI2NSIgZmlsbD0iI2IyNmEwMCIvPgo8dGV4dCBjbGFzcz0idmsiIHg9IjExMjciIHk9IjQ2NiIgZmlsbD0iIzhhNTIwMCI+VkVSRElDVDwvdGV4dD4KPHRleHQgY2xhc3M9InZ0IiB4PSIxMTI3IiB5PSI0ODgiPkJ1aWxkYWJsZSB0b2RheTwvdGV4dD4KPHRleHQgY2xhc3M9ImFydCIgeD0iMTI1OSIgeT0iNDg4Ij7igJQgPHRzcGFuIGNsYXNzPSJtdCI+d2l0aF9saXBzY2hpdHo8L3RzcGFuPiBhbHJlYWR5IGFjY2VwdHMgaXQ8L3RleHQ+Cgo8IS0tID09PT09PT09PT09PT09PT09IGNvbXBhcmlzb24gdGFibGUgPT09PT09PT09PT09PT09PT0gLS0+CjxyZWN0IHg9IjMyIiB5PSI1NDYiIHdpZHRoPSIxNDE2IiBoZWlnaHQ9IjQ0IiBmaWxsPSIjMGQxNzIxIi8+Cjx0ZXh0IGNsYXNzPSJ0aCIgeD0iNDgiIHk9IjU3NCI+UFJPUEVSVFk8L3RleHQ+CjxnIGNsYXNzPSJ0aCI+CiAgPHJlY3QgeD0iMjU4IiB5PSI1NjIiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iIzJjNWFhMCIvPjx0ZXh0IHg9IjI3NiIgeT0iNTc0Ij5BIMK3IERPTUFJTjwvdGV4dD4KICA8cmVjdCB4PSI1NTgiIHk9IjU2MiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMTc3OTZiIi8+PHRleHQgeD0iNTc2IiB5PSI1NzQiPkIgwrcgUFJJTUlUSVZFUzwvdGV4dD4KICA8cmVjdCB4PSI4NTgiIHk9IjU2MiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjNmEzZDlhIi8+PHRleHQgeD0iODc2IiB5PSI1NzQiPkMgwrcgU1RBVEU8L3RleHQ+CiAgPHJlY3QgeD0iMTE1OCIgeT0iNTYyIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNiMjZhMDAiLz48dGV4dCB4PSIxMTc2IiB5PSI1NzQiPkQgwrcgUkVQUkVTRU5UQVRJT048L3RleHQ+CjwvZz4KPHJlY3QgeD0iMzIiIHk9IjU5MCIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMzIiIHk9IjYzNiIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmNmY5ZmIiLz4KPHJlY3QgeD0iMzIiIHk9IjY4MiIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMzIiIHk9IjcyOCIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmNmY5ZmIiLz4KPHJlY3QgeD0iMzIiIHk9Ijc3NCIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMzIiIHk9IjgyMCIgd2lkdGg9IjE0MTYiIGhlaWdodD0iNDYiIGZpbGw9IiNmMmY2ZjkiLz4KPGcgc3Ryb2tlPSIjZGRlNWVjIiBzdHJva2Utd2lkdGg9IjEiPgogIDxwYXRoIGQ9Ik0zMiA2MzYgSDE0NDggTTMyIDY4MiBIMTQ0OCBNMzIgNzI4IEgxNDQ4IE0zMiA3NzQgSDE0NDggTTMyIDgyMCBIMTQ0OCIvPgogIDxwYXRoIGQ9Ik0yNDggNTkwIFY4NjYgTTU0OCA1OTAgVjg2NiBNODQ4IDU5MCBWODY2IE0xMTQ4IDU5MCBWODY2Ii8+CjwvZz4KPHJlY3QgeD0iMzIiIHk9IjU5MCIgd2lkdGg9IjE0MTYiIGhlaWdodD0iMjc2IiBmaWxsPSJub25lIiBzdHJva2U9IiNjM2NmZDkiIHN0cm9rZS13aWR0aD0iMS4yIi8+Cgo8ZyBjbGFzcz0icmwiPgogIDx0ZXh0IHg9IjQ4IiB5PSI2MTgiPldoYXQgaXMgdmFyaWVkPC90ZXh0PgogIDx0ZXh0IHg9IjQ4IiB5PSI2NjQiPldoZXJlIGl0IGxpdmVzPC90ZXh0PgogIDx0ZXh0IHg9IjQ4IiB5PSI3MTAiPkdyYWRpZW50IGF2YWlsYWJsZSBhczwvdGV4dD4KICA8dGV4dCB4PSI0OCIgeT0iNzU2Ij5MaXBzY2hpdHogY2VydGlmaWNhdGU8L3RleHQ+CiAgPHRleHQgeD0iNDgiIHk9IjgwMiI+Q29zdCBpcyBkcml2ZW4gYnk8L3RleHQ+CiAgPHRleHQgeD0iNDgiIHk9Ijg0OCI+VmVyZGljdDwvdGV4dD4KPC9nPgo8ZyBjbGFzcz0idGQiPgogIDx0ZXh0IHg9IjI2NCIgeT0iNjE4Ij5hIHBvaW50IDx0c3BhbiBjbGFzcz0ibXQiPng8L3RzcGFuPiBpbiB0aGUgZnJlZSBzcGFjZTwvdGV4dD4KICA8dGV4dCB4PSI1NjQiIHk9IjYxOCI+YSBib3VuZGFyeSBwcm9maWxlIG9yIGEgcGF0aDwvdGV4dD4KICA8dGV4dCB4PSI4NjQiIHk9IjYxOCI+dGhlIHN0b3JlZCBmaWVsZCA8dHNwYW4gY2xhc3M9Im10Ij5nPC90c3Bhbj4gaXRzZWxmPC90ZXh0PgogIDx0ZXh0IHg9IjExNjQiIHk9IjYxOCI+dGhlIHBhcmFtZXRlcnMgb2YgYSBmYW1pbHk8L3RleHQ+CgogIDx0ZXh0IHg9IjI2NCIgeT0iNjU4Ij5hIEhpbGJlcnQgYmFsbCDigJQgb3IgYSB3ZWlnaHRlZDwvdGV4dD4KICA8dGV4dCB4PSIyNjQiIHk9IjY3NCI+ZWxsaXBzb2lkLCB3aGljaCBpcyBjb21wYWN0PC90ZXh0PgogIDx0ZXh0IHg9IjU2NCIgeT0iNjU4Ij5MwrIgcmFkaWFsIHByb2ZpbGVzLCBIwrkgcGF0aHM8L3RleHQ+CiAgPHRleHQgeD0iNTY0IiB5PSI2NzQiPihmdW5jdGlvbiBzcGFjZXMgcHJvcGVyKTwvdGV4dD4KICA8dGV4dCB4PSI4NjQiIHk9IjY1OCI+dGhlIDEtTGlwc2NoaXR6IGZ1bmN0aW9ucyBvbiDOqTo8L3RleHQ+CiAgPHRleHQgeD0iODY0IiB5PSI2NzQiPmEgbGF0dGljZSB1bmRlciBwb2ludHdpc2UgbWluPC90ZXh0PgogIDx0ZXh0IHg9IjExNjQiIHk9IjY1OCI+YSBmaW5pdGUtZGltZW5zaW9uYWwgbWFuaWZvbGQ8L3RleHQ+CiAgPHRleHQgeD0iMTE2NCIgeT0iNjc0Ij5pbnNpZGUgYW4gaW5maW5pdGUtZGltLiBzcGFjZTwvdGV4dD4KCiAgPHRleHQgeD0iMjY0IiB5PSI3MTAiPnJhbmRvbSBkaXJlY3Rpb25hbCBwcm9iZXM8L3RleHQ+CiAgPHRleHQgeD0iNTY0IiB5PSI3MTAiPnRoZSBzaGFwZSBkZXJpdmF0aXZlPC90ZXh0PgogIDx0ZXh0IHg9Ijg2NCIgeT0iNzEwIj5jb25kaXRpb25hbCBncmFkaWVudDwvdGV4dD4KICA8dGV4dCB4PSIxMTY0IiB5PSI3MTAiPmJhY2twcm9wYWdhdGlvbjwvdGV4dD4KCiAgPHRleHQgeD0iMjY0IiB5PSI3NTAiPnN1cnZpdmVzIG9ubHkgd2hlcmUgzqkgaXM8L3RleHQ+CiAgPHRleHQgeD0iMjY0IiB5PSI3NjYiPmNvbXBhY3Qg4oCUIGkuZS4gd2VpZ2h0ZWQ8L3RleHQ+CiAgPHRleHQgeD0iNTY0IiB5PSI3NTAiPmluaGVyaXRlZCBmcm9tIHRoZSBmaWVsZCdzIG93bjwvdGV4dD4KICA8dGV4dCB4PSI1NjQiIHk9Ijc2NiI+ZGVjbGFyZWQgY29uc3RhbnQ8L3RleHQ+CiAgPHRleHQgeD0iODY0IiB5PSI3NTAiPm5vdCByZXF1aXJlZDogbW9ub3RvbmljaXR5IG9mPC90ZXh0PgogIDx0ZXh0IHg9Ijg2NCIgeT0iNzY2Ij5taW4gZG9lcyB0aGUgc2FtZSB3b3JrPC90ZXh0PgogIDx0ZXh0IHg9IjExNjQiIHk9Ijc1MCI+eWVzLCBpZiB0aGUgbGF5ZXJzIGFyZTwvdGV4dD4KICA8dGV4dCB4PSIxMTY0IiB5PSI3NjYiPm5vcm0tY29uc3RyYWluZWQ8L3RleHQ+CgogIDx0ZXh0IHg9IjI2NCIgeT0iODAyIj50aGUgY292ZXJpbmcgbnVtYmVyIG9mIM6pPC90ZXh0PgogIDx0ZXh0IHg9IjU2NCIgeT0iODAyIj5ib3VuZGFyeSByZXNvbHV0aW9uPC90ZXh0PgogIDx0ZXh0IHg9Ijg2NCIgeT0iODAyIj50aGUgbnVtYmVyIG9mIGluc2VydGlvbnM8L3RleHQ+CiAgPHRleHQgeD0iMTE2NCIgeT0iODAyIj50aGUgY2VydGlmaWVkIGJvdW5kIEw8L3RleHQ+CjwvZz4KPGc+CiAgPHJlY3QgeD0iMjY0IiB5PSI4MzIiIHdpZHRoPSIxMTIiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iI2VhZjFmYSIgc3Ryb2tlPSIjMmM1YWEwIi8+CiAgPHRleHQgY2xhc3M9InRkIiB4PSIzMjAiIHk9Ijg0OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmNDI3NiI+SGFyZGVzdDwvdGV4dD4KICA8cmVjdCB4PSI1NjQiIHk9IjgzMiIgd2lkdGg9IjEzMCIgaGVpZ2h0PSIyNCIgcng9IjEyIiBmaWxsPSIjZTZmNGYxIiBzdHJva2U9IiMxNzc5NmIiLz4KICA8dGV4dCBjbGFzcz0idGQiIHg9IjYyOSIgeT0iODQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMGY1ZDUyIj5Nb3N0IHVzZWZ1bDwvdGV4dD4KICA8cmVjdCB4PSI4NjQiIHk9IjgzMiIgd2lkdGg9IjEzMCIgaGVpZ2h0PSIyNCIgcng9IjEyIiBmaWxsPSIjZjBlOWY4IiBzdHJva2U9IiM2YTNkOWEiLz4KICA8dGV4dCBjbGFzcz0idGQiIHg9IjkyOSIgeT0iODQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjNTAyNzZmIj5FeHBsYW5hdG9yeTwvdGV4dD4KICA8cmVjdCB4PSIxMTY0IiB5PSI4MzIiIHdpZHRoPSIxNDYiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iI2ZkZjBkYyIgc3Ryb2tlPSIjYjI2YTAwIi8+CiAgPHRleHQgY2xhc3M9InRkIiB4PSIxMjM3IiB5PSI4NDgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiM4YTUyMDAiPkJ1aWxkYWJsZSB0b2RheTwvdGV4dD4KPC9nPgoKPHRleHQgY2xhc3M9ImNhcCIgeD0iMzIiIHk9Ijg5OCI+RmlndXJlIDEgfCBUaGUgZm91ciBwcm9ncmFtbWVzIGhpZGRlbiBpbiB0aGUgcGhyYXNlIOKAnGluZmluaXRlLWRpbWVuc2lvbmFs4oCdLiBUaGV5IGRpZmZlciBpbiB3aGF0IGlzIHZhcmllZCwgYW5kIHRoZXJlZm9yZSBpbiB3aGljaDwvdGV4dD4KPHRleHQgY2xhc3M9ImNhcCIgeD0iMzIiIHk9IjkxOCI+bWFjaGluZXJ5IHN1cnZpdmVzOiBBIGFuZCBEIGtlZXAgdGhlIGNlcnRpZmljYXRlIHVuZGVyIGNvbmRpdGlvbnMsIEIgYW5kIEMga2VlcCB0aGUgb3B0aW1pemVyIHVuY29uZGl0aW9uYWxseS4gU2VlIMKnwqcy4oCTNS48L3RleHQ+Cjwvc3ZnPgo="></a></div>
+          <figcaption class="caption"><b>Figure 2.</b> Four readings of
+          &ldquo;infinite-dimensional&rdquo;: <b>A</b> the domain becomes a Hilbert ball or
+          weighted ellipsoid; <b>B</b> each primitive&rsquo;s boundary becomes a function;
+          <b>C</b> the field itself becomes the variable; <b>D</b> the field is drawn from a
+          parametric family with a certified Lipschitz bound. The table gives, for each, what
+          is varied, where it lives, the form the gradient takes, whether the certificate
+          survives, and what drives the cost.</figcaption>
+        </figure>
+
+        <figure class="plate">
+          <div class="plate-frame"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/figures/fig4-survival.svg"><img alt="Figure 4. The asymmetry at the centre of the report. (a) Farthest-first traversal, illustrated by five greedy insertions and their clearance balls, is a 2-approximation to k-center in any metric space, so the quality of the strategy is indifferent to dimension. (b) The pruning test must reach boxes of half-diagonal below delta over the summed Lipschitz constants, and the number of such boxes is exponential in N and infinite when the unit ball is non-compact; the test then remains sound but proves nothing below the root box. (c) On a compact weighted ellipsoid the entropy is polynomial in one over epsilon with the exponent set by the smoothness of the weight decay, so the ambient dimension leaves the exponent entirely." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDgwIDc2MCIgd2lkdGg9IjE0ODAiIGhlaWdodD0iNzYwIiBmb250LWZhbWlseT0iSGVsdmV0aWNhIE5ldWUsIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IiMxNjIwMmIiPgo8dGl0bGU+V2hhdCBzdXJ2aXZlcyBpbmZpbml0ZSBkaW1lbnNpb246IHRoZSBncmVlZHkgZ3VhcmFudGVlLCB0aGUgTGlwc2NoaXR6IGNlcnRpZmljYXRlLCBhbmQgdGhlIHJvbGUgb2Ygc21vb3RobmVzczwvdGl0bGU+CjxkZWZzPgogIDxtYXJrZXIgaWQ9ImEzIiB2aWV3Qm94PSIwIDAgMTAgMTAiIHJlZlg9IjkiIHJlZlk9IjUiIG1hcmtlcldpZHRoPSI2IiBtYXJrZXJIZWlnaHQ9IjYiIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj4KICAgIDxwYXRoIGQ9Ik0wLDAgTDEwLDUgTDAsMTAgeiIgZmlsbD0iIzE2MjAyYiIvPgogIDwvbWFya2VyPgogIDxtYXJrZXIgaWQ9ImEzZyIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI5IiByZWZZPSI1IiBtYXJrZXJXaWR0aD0iNiIgbWFya2VySGVpZ2h0PSI2IiBvcmllbnQ9ImF1dG8tc3RhcnQtcmV2ZXJzZSI+CiAgICA8cGF0aCBkPSJNMCwwIEwxMCw1IEwwLDEwIHoiIGZpbGw9IiMyZTdkMzIiLz4KICA8L21hcmtlcj4KICA8bWFya2VyIGlkPSJhM3IiIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iOSIgcmVmWT0iNSIgbWFya2VyV2lkdGg9IjYiIG1hcmtlckhlaWdodD0iNiIgb3JpZW50PSJhdXRvLXN0YXJ0LXJldmVyc2UiPgogICAgPHBhdGggZD0iTTAsMCBMMTAsNSBMMCwxMCB6IiBmaWxsPSIjYjMyNjFlIi8+CiAgPC9tYXJrZXI+CiAgPHN0eWxlPgogICAgLnR0bHsgZm9udC1zaXplOjE5cHg7IGZvbnQtd2VpZ2h0OjcwMDsgbGV0dGVyLXNwYWNpbmc6MS41cHg7IH0KICAgIC5zdWIgeyBmb250LXNpemU6MTMuNHB4OyBmaWxsOiM1YTZiN2E7IH0KICAgIC5wbiAgeyBmb250LXNpemU6MTQuNHB4OyBmb250LXdlaWdodDo3MDA7IH0KICAgIC5wbCAgeyBmb250LXNpemU6MTIuMnB4OyBmaWxsOiMzZDRkNWM7IH0KICAgIC5zbSAgeyBmb250LXNpemU6MTEuNHB4OyBmaWxsOiM1YTZiN2E7IH0KICAgIC5zbWIgeyBmb250LXNpemU6MTEuNHB4OyBmb250LXdlaWdodDo3MDA7IH0KICAgIC5udW0geyBmb250LXNpemU6MTFweDsgZm9udC13ZWlnaHQ6NzAwOyBmaWxsOiNmZmZmZmY7IH0KICAgIC5tdCAgeyBmb250LWZhbWlseTpHZW9yZ2lhLCdUaW1lcyBOZXcgUm9tYW4nLHNlcmlmOyBmb250LXN0eWxlOml0YWxpYzsgfQogICAgLmNhcCB7IGZvbnQtZmFtaWx5Okdlb3JnaWEsJ1RpbWVzIE5ldyBSb21hbicsc2VyaWY7IGZvbnQtc2l6ZToxMy4ycHg7IGZpbGw6IzRiNWI2YTsgfQogICAgLmF4ICB7IHN0cm9rZTojOGE5YWE4OyBzdHJva2Utd2lkdGg6MS4xOyBmaWxsOm5vbmU7IH0KICAgIC5ncmlkeyBzdHJva2U6I2U0ZWFlZjsgc3Ryb2tlLXdpZHRoOjE7IGZpbGw6bm9uZTsgfQogIDwvc3R5bGU+CjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjE0ODAiIGhlaWdodD0iNzYwIiBmaWxsPSIjZmZmZmZmIi8+Cgo8dGV4dCBjbGFzcz0idHRsIiB4PSIzMiIgeT0iMzYiPlRIRSBTVFJBVEVHWSBTVVJWSVZFUzsgVEhFIENFUlRJRklDQVRFIE5FRURTIEEgQ09ORElUSU9OPC90ZXh0Pgo8dGV4dCBjbGFzcz0ic3ViIiB4PSIzMiIgeT0iNTgiPkdyZWVkeSBpbnNlcnRpb24ga2VlcHMgaXRzIGFwcHJveGltYXRpb24gZ3VhcmFudGVlIGluIGFueSBtZXRyaWMgc3BhY2Ug4oCUIHRoZSBMaXBzY2hpdHogcHJvb2Yga2VlcHMgaXRzIHBvd2VyIG9ubHkgd2hlcmUgzqkgaXMgY29tcGFjdDwvdGV4dD4KPHBhdGggZD0iTTMyIDcyIEgxNDQ4IiBzdHJva2U9IiMxNjIwMmIiIHN0cm9rZS13aWR0aD0iMS42Ii8+Cgo8IS0tID09PT09PT09PT09PSBwYW5lbCAoYSk6IGZhcnRoZXN0LWZpcnN0ID09PT09PT09PT09PSAtLT4KPHJlY3QgeD0iMzIiIHk9IjkwIiB3aWR0aD0iNDU0IiBoZWlnaHQ9IjUwMCIgcng9IjciIGZpbGw9IiNmOWZkZmEiIHN0cm9rZT0iI2M5ZTJkMCIvPgo8cmVjdCB4PSIzMiIgeT0iOTAiIHdpZHRoPSI0NTQiIGhlaWdodD0iMzQiIHJ4PSI3IiBmaWxsPSIjMmU3ZDMyIi8+CjxyZWN0IHg9IjMyIiB5PSIxMTIiIHdpZHRoPSI0NTQiIGhlaWdodD0iMTIiIGZpbGw9IiMyZTdkMzIiLz4KPHRleHQgY2xhc3M9InBuIiB4PSI0OCIgeT0iMTEzIiBmaWxsPSIjZmZmZmZmIj4oYSkgIFdoYXQgc3Vydml2ZXMg4oCUIHRoZSBncmVlZHkgZ3VhcmFudGVlPC90ZXh0PgoKPHRleHQgY2xhc3M9InNtIiB4PSI3MiIgeT0iMTQ0Ij5udW1iZXJzIGdpdmUgaW5zZXJ0aW9uIG9yZGVyOyBkYXNoZWQgY2lyY2xlcyBhcmUgdGhlIGNsZWFyYW5jZSBhdCB0aGF0IHN0ZXA8L3RleHQ+CjxnPgogIDxyZWN0IHg9IjcyIiB5PSIxNTAiIHdpZHRoPSIzNzQiIGhlaWdodD0iMjUwIiBmaWxsPSIjZjJmYWYzIiBzdHJva2U9IiMyZTdkMzIiIHN0cm9rZS13aWR0aD0iMS40Ii8+CiAgPCEtLSBjbGVhcmFuY2UgYmFsbHMsIGRlY3JlYXNpbmcgYXMgaW5zZXJ0aW9ucyBhY2N1bXVsYXRlIC0tPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhjYzI5MiIgc3Ryb2tlLWRhc2hhcnJheT0iNCAzIj4KICAgIDxjaXJjbGUgY3g9IjE0NiIgY3k9IjIyNCIgcj0iNjIiLz48Y2lyY2xlIGN4PSIzNzIiIGN5PSIzMzAiIHI9IjU4Ii8+CiAgICA8Y2lyY2xlIGN4PSIzNzIiIGN5PSIxOTYiIHI9IjQ2Ii8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMzQ4IiByPSI0MiIvPgogICAgPGNpcmNsZSBjeD0iMjU4IiBjeT0iMjYyIiByPSIzNCIvPgogIDwvZz4KICA8ZyBmaWxsPSIjMmU3ZDMyIj4KICAgIDxjaXJjbGUgY3g9IjE0NiIgY3k9IjIyNCIgcj0iNyIvPjxjaXJjbGUgY3g9IjM3MiIgY3k9IjMzMCIgcj0iNyIvPgogICAgPGNpcmNsZSBjeD0iMzcyIiBjeT0iMTk2IiByPSI3Ii8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMzQ4IiByPSI3Ii8+PGNpcmNsZSBjeD0iMjU4IiBjeT0iMjYyIiByPSI3Ii8+CiAgPC9nPgogIDxnIGNsYXNzPSJudW0iIHRleHQtYW5jaG9yPSJtaWRkbGUiPgogICAgPHRleHQgeD0iMTQ2IiB5PSIyMjgiPjE8L3RleHQ+PHRleHQgeD0iMzcyIiB5PSIzMzQiPjI8L3RleHQ+PHRleHQgeD0iMzcyIiB5PSIyMDAiPjM8L3RleHQ+CiAgICA8dGV4dCB4PSIxNjAiIHk9IjM1MiI+NDwvdGV4dD48dGV4dCB4PSIyNTgiIHk9IjI2NiI+NTwvdGV4dD4KICA8L2c+CiAgPCEtLSByYWRpdXMgYW5ub3RhdGlvbiBvbiBiYWxsIDUgLS0+CiAgPHBhdGggZD0iTTI1OCAyNjIgTDI5MiAyNjIiIHN0cm9rZT0iIzFlNWIyMSIgc3Ryb2tlLXdpZHRoPSIxLjMiIG1hcmtlci1lbmQ9InVybCgjYTNnKSIvPgogIDx0ZXh0IGNsYXNzPSJzbWIiIHg9IjI5NiIgeT0iMjU4IiBmaWxsPSIjMWU1YjIxIj5k4oKFPC90ZXh0Pgo8L2c+Cgo8cmVjdCB4PSI3MiIgeT0iNDE0IiB3aWR0aD0iMzc0IiBoZWlnaHQ9IjcyIiByeD0iNSIgZmlsbD0iI2UzZjJlNCIgc3Ryb2tlPSIjMmU3ZDMyIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCBjbGFzcz0ic21iIiB4PSI4OCIgeT0iNDM2IiBmaWxsPSIjMWU1YjIxIj5GQVJUSEVTVC1GSVJTVCBUUkFWRVJTQUwgSVMgQSAyLUFQUFJPWElNQVRJT048L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iODgiIHk9IjQ1NiI+R29uemFsZXogKDE5ODUpOiB0aGUgY2xlYXJhbmNlIGFmdGVyIGsgZ3JlZWR5IGluc2VydGlvbnM8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iODgiIHk9IjQ3NCI+aXMgd2l0aGluIGEgZmFjdG9yIDIgb2YgdGhlIGJlc3QgcG9zc2libGUgay1wb2ludCBsYXlvdXQuPC90ZXh0PgoKPHRleHQgY2xhc3M9InBsIiB4PSI0OCIgeT0iNTEyIj5UaGUgcHJvb2YgaXMgcHVyZWx5IG1ldHJpYyDigJQgaXQgbmV2ZXIgbWVudGlvbnMgY29vcmRpbmF0ZXMsPC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjQ4IiB5PSI1MzAiPmNvbnZleGl0eSBvciBkaW1lbnNpb24uIEl0IHRoZXJlZm9yZSBob2xkcyB2ZXJiYXRpbSBpbiDihJ3CsiwgaW48L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNDgiIHk9IjU0OCI+4oSdwrnigbDigbAsIGluIEzCsiwgYW5kIGluIGEgc3BhY2Ugb2YgcGF0aHMuIEdyZWVkeSBpbnNlcnRpb24gaXMgYWxzbzwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSI0OCIgeT0iNTY2Ij5jb25kaXRpb25hbCBncmFkaWVudCBvbiBhIGxhdHRpY2UsIGdpdmluZyBhbiBPKDEvaykgcmF0ZSAowqc0KS48L3RleHQ+Cgo8IS0tID09PT09PT09PT09PSBwYW5lbCAoYik6IHRoZSBjZXJ0aWZpY2F0ZSA9PT09PT09PT09PT0gLS0+CjxyZWN0IHg9IjUxMiIgeT0iOTAiIHdpZHRoPSI0NTQiIGhlaWdodD0iNTAwIiByeD0iNyIgZmlsbD0iI2ZmZmJmYiIgc3Ryb2tlPSIjZWNjZGM5Ii8+CjxyZWN0IHg9IjUxMiIgeT0iOTAiIHdpZHRoPSI0NTQiIGhlaWdodD0iMzQiIHJ4PSI3IiBmaWxsPSIjYjMyNjFlIi8+CjxyZWN0IHg9IjUxMiIgeT0iMTEyIiB3aWR0aD0iNDU0IiBoZWlnaHQ9IjEyIiBmaWxsPSIjYjMyNjFlIi8+Cjx0ZXh0IGNsYXNzPSJwbiIgeD0iNTI4IiB5PSIxMTMiIGZpbGw9IiNmZmZmZmYiPihiKSAgV2hhdCBicmVha3Mg4oCUIHRoZSBjb3ZlcmluZyBhcmd1bWVudDwvdGV4dD4KCjwhLS0gZGVsdGEtY292ZXIgb2YgYSBkb21haW4gLS0+CjxnPgogIDxyZWN0IHg9IjU1MiIgeT0iMTUwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iI2ZkZjNmMiIgc3Ryb2tlPSIjYjMyNjFlIiBzdHJva2Utd2lkdGg9IjEuNCIvPgogIDxnIHN0cm9rZT0iI2UwYTlhMyIgc3Ryb2tlLXdpZHRoPSIwLjkiPgogICAgPHBhdGggZD0iTTU4MiAxNTAgVjMzMCBNNjEyIDE1MCBWMzMwIE02NDIgMTUwIFYzMzAgTTY3MiAxNTAgVjMzMCBNNzAyIDE1MCBWMzMwIi8+CiAgICA8cGF0aCBkPSJNNTUyIDE4MCBINzMyIE01NTIgMjEwIEg3MzIgTTU1MiAyNDAgSDczMiBNNTUyIDI3MCBINzMyIE01NTIgMzAwIEg3MzIiLz4KICA8L2c+CiAgPHJlY3QgeD0iNjEyIiB5PSIyMTAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgZmlsbD0iI2Y2Y2RjOCIgc3Ryb2tlPSIjYjMyNjFlIiBzdHJva2Utd2lkdGg9IjEuNCIvPgogIDxwYXRoIGQ9Ik02MTIgMjEwIEw2NDIgMjQwIiBzdHJva2U9IiNiMzI2MWUiIHN0cm9rZS13aWR0aD0iMS4xIi8+CiAgPHRleHQgY2xhc3M9InNtYiIgeD0iNjUwIiB5PSIyMDYiIGZpbGw9IiM4ZjFkMTciPmgoUik8L3RleHQ+CiAgPHRleHQgY2xhc3M9InNtIiB4PSI2NDIiIHk9IjM0OCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+dGhlIHRlc3QgbXVzdCByZWFjaCBib3hlcyB3aXRoPC90ZXh0PgogIDx0ZXh0IGNsYXNzPSJzbSIgeD0iNjQyIiB5PSIzNjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmhhbGYtZGlhZ29uYWwgaCAmbHQ7IM60IC8gKExfZiArIExfZyk8L3RleHQ+CjwvZz4KPCEtLSBjb3ZlcmluZyBudW1iZXIgLS0+CjxyZWN0IHg9Ijc1NiIgeT0iMTUwIiB3aWR0aD0iMTk0IiBoZWlnaHQ9Ijg2IiByeD0iNSIgZmlsbD0iI2ZkZjNmMiIgc3Ryb2tlPSIjYjMyNjFlIiBzdHJva2Utd2lkdGg9IjEuMSIvPgo8dGV4dCBjbGFzcz0ic21iIiB4PSI4NTMiIHk9IjE3MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzhmMWQxNyI+SE9XIE1BTlkgU1VDSCBCT1hFUz88L3RleHQ+Cjx0ZXh0IGNsYXNzPSJtdCIgeD0iODUzIiB5PSIyMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTYiPigxL860KeG0uiDiiaQgTijOqSwgzrQpIOKJpCAoMy/OtCnhtLo8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJzbSIgeD0iODUzIiB5PSIyMjIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmV4cG9uZW50aWFsIGluIHRoZSBkaW1lbnNpb248L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNzU2IiB5PSIyNjIiPkluIGluZmluaXRlIGRpbWVuc2lvbiB0aGUgY2xvc2VkIHVuaXQ8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNzU2IiB5PSIyODAiPmJhbGwgaXMgbm90IGNvbXBhY3QgKFJpZXN6KSwgc28gdGhpczwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSI3NTYiIHk9IjI5OCI+Y291bnQgaXMgaW5maW5pdGUgYXQgZXZlcnkgc2NhbGUuPC90ZXh0PgoKPCEtLSB0aGUgZ2F0ZSAtLT4KPGc+CiAgPHBhdGggZD0iTTc1MyAzNjAgVjM4NiIgc3Ryb2tlPSIjMTYyMDJiIiBzdHJva2Utd2lkdGg9IjEuNCIgbWFya2VyLWVuZD0idXJsKCNhMykiLz4KICA8cGF0aCBkPSJNNjQyIDM5MiBMNzgwIDQyNCBMNjQyIDQ1NiBMNTA0IDQyNCBaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTEsMCkiIGZpbGw9IiNmZmY3ZTgiIHN0cm9rZT0iI2IyNmEwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICA8dGV4dCBjbGFzcz0ic21iIiB4PSI3NTMiIHk9IjQyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SXMgzqkgY29tcGFjdCDigJQ8L3RleHQ+CiAgPHRleHQgY2xhc3M9InNtYiIgeD0iNzUzIiB5PSI0MzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmkuZS4gd2VpZ2h0ZWQ/PC90ZXh0PgogIDxwYXRoIGQ9Ik02MTUgNDI0IEg1NzUgVjQ2NyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmU3ZDMyIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgbWFya2VyLWVuZD0idXJsKCNhM2cpIi8+CiAgPHRleHQgY2xhc3M9InNtYiIgeD0iNTk1IiB5PSI0MTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxZTViMjEiPnllczwvdGV4dD4KICA8cGF0aCBkPSJNODkxIDQyNCBIOTMxIFY0NjciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2IzMjYxZSIgc3Ryb2tlLXdpZHRoPSIxLjYiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIG1hcmtlci1lbmQ9InVybCgjYTNyKSIvPgogIDx0ZXh0IGNsYXNzPSJzbWIiIHg9IjkxMSIgeT0iNDE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOGYxZDE3Ij5ubzwvdGV4dD4KPC9nPgo8cmVjdCB4PSI1MjgiIHk9IjQ3MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSI2NiIgcng9IjUiIGZpbGw9IiNlM2YyZTQiIHN0cm9rZT0iIzJlN2QzMiIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KPHRleHQgY2xhc3M9InNtYiIgeD0iNjI4IiB5PSI0OTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMxZTViMjEiPlNPVU5EIEFORCBVU0VGVUw8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iNjI4IiB5PSI1MTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPmNvc3QgcG9seW5vbWlhbCBpbiAxL861LDwvdGV4dD4KPHRleHQgY2xhc3M9InBsIiB4PSI2MjgiIHk9IjUyOCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+ZXhwb25lbnQgc2V0IGJ5IHNtb290aG5lc3M8L3RleHQ+CjxyZWN0IHg9Ijc1MCIgeT0iNDcwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjY2IiByeD0iNSIgZmlsbD0iI2ZiZTRlMiIgc3Ryb2tlPSIjYjMyNjFlIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCBjbGFzcz0ic21iIiB4PSI4NTAiIHk9IjQ5MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzhmMWQxNyI+U09VTkQgQlVUIFZBQ1VPVVM8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iODUwIiB5PSI1MTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPm5ldmVyIGxpZXMsIGJ1dCBwcm92ZXM8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iODUwIiB5PSI1MjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiPm5vdGhpbmcgYmVsb3cgdGhlIHJvb3QgYm94PC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjUyOCIgeT0iNTY2Ij5Tb3VuZG5lc3MgaXMgYSBvbmUtZGlyZWN0aW9uYWwgY2xhaW0sIHNvIGl0IGlzIG5ldmVyIGxvc3QuIENvbXBsZXRlbmVzcyBpcy48L3RleHQ+Cgo8IS0tID09PT09PT09PT09PSBwYW5lbCAoYyk6IHNtb290aG5lc3MgPT09PT09PT09PT09IC0tPgo8cmVjdCB4PSI5OTIiIHk9IjkwIiB3aWR0aD0iNDU2IiBoZWlnaHQ9IjUwMCIgcng9IjciIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2Q1ZGVlNiIvPgo8cmVjdCB4PSI5OTIiIHk9IjkwIiB3aWR0aD0iNDU2IiBoZWlnaHQ9IjM0IiByeD0iNyIgZmlsbD0iIzBkMTcyMSIvPgo8cmVjdCB4PSI5OTIiIHk9IjExMiIgd2lkdGg9IjQ1NiIgaGVpZ2h0PSIxMiIgZmlsbD0iIzBkMTcyMSIvPgo8dGV4dCBjbGFzcz0icG4iIHg9IjEwMDgiIHk9IjExMyIgZmlsbD0iI2ZmZmZmZiI+KGMpICBTbW9vdGhuZXNzIGJ1eXMgYmFjayB0cmFjdGFiaWxpdHk8L3RleHQ+Cgo8ZyBjbGFzcz0iZ3JpZCI+CiAgPHBhdGggZD0iTTEwODAgNDAwIEgxNDE2IE0xMDgwIDMyMCBIMTQxNiBNMTA4MCAyNDAgSDE0MTYgTTEwODAgMTYwIEgxNDE2Ii8+CjwvZz4KPHBhdGggY2xhc3M9ImF4IiBkPSJNMTA4MCA0MDAgSDE0MTYgTTEwODAgMTUyIFY0MDAiLz4KPGcgY2xhc3M9InNtIiB0ZXh0LWFuY2hvcj0iZW5kIj4KICA8dGV4dCB4PSIxMDcyIiB5PSI0MDQiPjEw4oGwPC90ZXh0PgogIDx0ZXh0IHg9IjEwNzIiIHk9IjMyNCI+MTDCuTwvdGV4dD4KICA8dGV4dCB4PSIxMDcyIiB5PSIyNDQiPjEwwrI8L3RleHQ+CiAgPHRleHQgeD0iMTA3MiIgeT0iMTY0Ij4xMOKBtDwvdGV4dD4KPC9nPgo8IS0tIGN1cnZlIGxvZyBOID0gZXBzXigtMS9zKSBhdCBlcHM9MWUtMiAgLT4gIDEwXigyL3MpOyBzIGZyb20gLjQgdG8gNSAtLT4KPHBhdGggZD0iTTEwOTYgMTUyIEMgMTExNiAyMTQgMTE0MCAyNjggMTE2OCAzMDAgQyAxMjE2IDM0MCAxMjgwIDM2NiAxNDA4IDM4MiIKICAgICAgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmM1YWEwIiBzdHJva2Utd2lkdGg9IjIuOCIvPgo8ZyBmaWxsPSIjMmM1YWEwIj4KICA8Y2lyY2xlIGN4PSIxMTEwIiBjeT0iMTYwIiByPSI0LjUiLz48Y2lyY2xlIGN4PSIxMTY4IiBjeT0iMjQwIiByPSI0LjUiLz4KICA8Y2lyY2xlIGN4PSIxMjU2IiBjeT0iMzIwIiByPSI0LjUiLz48Y2lyY2xlIGN4PSIxMzY0IiBjeT0iMzc4IiByPSI0LjUiLz4KPC9nPgo8ZyBjbGFzcz0ic21iIiBmaWxsPSIjMWY0Mjc2Ij4KICA8dGV4dCB4PSIxMTIyIiB5PSIxNTYiPnMgPSAwLjUg4oaSIDEw4oG0PC90ZXh0PgogIDx0ZXh0IHg9IjExODAiIHk9IjIzNiI+cyA9IDEg4oaSIDEwwrI8L3RleHQ+CiAgPHRleHQgeD0iMTI2OCIgeT0iMzE2Ij5zID0gMiDihpIgMTA8L3RleHQ+CiAgPHRleHQgeD0iMTM3NiIgeT0iMzc0IiB0ZXh0LWFuY2hvcj0iZW5kIiBkeT0iMTgiPnMgPSA0IOKGkiAzLjI8L3RleHQ+CjwvZz4KPGcgY2xhc3M9InNtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4KICA8dGV4dCB4PSIxMTEwIiB5PSI0MjAiPjAuNTwvdGV4dD48dGV4dCB4PSIxMTY4IiB5PSI0MjAiPjE8L3RleHQ+PHRleHQgeD0iMTI1NiIgeT0iNDIwIj4yPC90ZXh0Pjx0ZXh0IHg9IjEzNjQiIHk9IjQyMCI+NDwvdGV4dD4KPC9nPgo8dGV4dCBjbGFzcz0ic20iIHg9IjEyNDgiIHk9IjQ0NCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+c21vb3RobmVzcyBzIG9mIHRoZSB3ZWlnaHQgZGVjYXkgYeG1oiDiiY0gacKyy6I8L3RleHQ+Cjx0ZXh0IGNsYXNzPSJzbSIgeD0iMTAxMiIgeT0iMjc2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB0cmFuc2Zvcm09InJvdGF0ZSgtOTAgMTAxMiAyNzYpIj5sb2cgTijOtSkgYXQgzrUgPSAxMOKBu8KyPC90ZXh0PgoKPHJlY3QgeD0iMTAwOCIgeT0iNDY2IiB3aWR0aD0iNDI0IiBoZWlnaHQ9IjcwIiByeD0iNSIgZmlsbD0iI2VhZjFmYSIgc3Ryb2tlPSIjMmM1YWEwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCBjbGFzcz0ic21iIiB4PSIxMDI0IiB5PSI0ODgiIGZpbGw9IiMxZjQyNzYiPkVYUE9ORU5USUFMIElOIE4gIOKGkiAgUE9MWU5PTUlBTCBJTiAxL861PC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjEwMjQiIHk9IjUwOCI+T24gYSB3ZWlnaHRlZCBlbGxpcHNvaWQgdGhlIGVudHJvcHkgb2JleXMgbG9nIE4ozrUpIOKJjSDOtTx0c3BhbiBkeT0iLTUiIGZvbnQtc2l6ZT0iOSI+4oiSMS9zPC90c3Bhbj48dHNwYW4gZHk9IjUiPi4gVGhlPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IGNsYXNzPSJwbCIgeD0iMTAyNCIgeT0iNTI4Ij5hbWJpZW50IGRpbWVuc2lvbiBsZWF2ZXMgdGhlIGV4cG9uZW50IGVudGlyZWx5ICjCpzIuMykuPC90ZXh0Pgo8dGV4dCBjbGFzcz0icGwiIHg9IjEwMDgiIHk9IjU2NiI+SW5maW5pdGVseSBtYW55IGNvb3JkaW5hdGVzIGFyZSBhZmZvcmRhYmxlIOKAlCBpZiB0aGV5IG1hdHRlciBwcm9ncmVzc2l2ZWx5IGxlc3MuPC90ZXh0PgoKPHRleHQgY2xhc3M9ImNhcCIgeD0iMzIiIHk9IjYyNiI+RmlndXJlIDQgfCBUaGUgYXN5bW1ldHJ5IGF0IHRoZSBjZW50cmUgb2YgdGhlIHJlcG9ydC4gKGEpIFRoZSBxdWFsaXR5IG9mIHRoZSBncmVlZHkgc3RyYXRlZ3kgcmVzdHMgb24gYSBtZXRyaWMgYXJndW1lbnQgYW5kIGlzIHRoZXJlZm9yZTwvdGV4dD4KPHRleHQgY2xhc3M9ImNhcCIgeD0iMzIiIHk9IjY0NiI+aW5kaWZmZXJlbnQgdG8gZGltZW5zaW9uLiAoYikgVGhlIHNvdW5kbmVzcyBvZiBwcnVuaW5nIGFsc28gc3Vydml2ZXMg4oCUIHRoZSBib3VuZCBpcyBtZXRyaWMg4oCUIGJ1dCBpdHMgdXNlZnVsbmVzcyByZXN0cyBvbiBjb3ZlcmluZyDOqSBieTwvdGV4dD4KPHRleHQgY2xhc3M9ImNhcCIgeD0iMzIiIHk9IjY2NiI+ZmluaXRlbHkgbWFueSBzbWFsbCBib3hlcywgd2hpY2ggZmFpbHMgb3V0cmlnaHQgd2hlbiB0aGUgdW5pdCBiYWxsIGlzIG5vbi1jb21wYWN0OyB0aGUgdGVzdCB0aGVuIHN0aWxsIG5ldmVyIGxpZXMsIGFuZCBuZXZlciBwcm92ZXMgYW55dGhpbmcuPC90ZXh0Pgo8dGV4dCBjbGFzcz0iY2FwIiB4PSIzMiIgeT0iNjg2Ij4oYykgUmVzdHJpY3RpbmcgdG8gYSBjb21wYWN0IHdlaWdodGVkIGVsbGlwc29pZCByZXN0b3JlcyBpdCwgYXQgYSBjb3N0IGdvdmVybmVkIGJ5IHRoZSBkZWNheSByYXRlIG9mIHRoZSB3ZWlnaHRzIHJhdGhlciB0aGFuIGJ5IGhvdyBtYW55PC90ZXh0Pgo8dGV4dCBjbGFzcz0iY2FwIiB4PSIzMiIgeT0iNzA2Ij5jb29yZGluYXRlcyB0aGVyZSBhcmUuIFdoYXQgYnJlYWtzIGlzIHRodXMgdGhlIHByb29mIG9mIGxvY2FsIHJlZHVuZGFuY3ksIG5vdCB0aGUgcXVhbGl0eSBvZiB0aGUgZ2xvYmFsIHN0cmF0ZWd5LjwvdGV4dD4KPC9zdmc+Cg=="></a></div>
+          <figcaption class="caption"><b>Figure 3.</b> The asymmetry at the centre of the
+          report. (a) Farthest-first traversal is a 2-approximation to k-center in any metric
+          space, so the quality of the strategy is indifferent to dimension. (b) The pruning
+          test must reach boxes whose half-diagonal falls below &#948; over the summed
+          Lipschitz constants; the number of such boxes is exponential in <i>N</i> and infinite
+          when the unit ball is non-compact, so the test stays sound but proves nothing below
+          the root box. (c) On a compact weighted ellipsoid the entropy is polynomial in
+          1/&#949;, and the ambient dimension leaves the exponent entirely.</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="section" id="research">
+    <h2 class="rubric"><span>Active work</span></h2>
+    <div class="list">
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Active</span>
+          <span>Rust library</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">space-filling</h3>
+          <p>Two solvers over a compound signed distance field. <em>Argmax2D</em> maximizes
+          exactly over a bitmap in Z-order and pays quadratically for resolution; <em>GD-ADF</em>
+          climbs to a local maximum, sampling the tree in logarithmic time, at 10&#8211;100&#215;
+          less memory. Both are <i>N</i>-dimensional as of 0.6.0. Arbitrary SDF primitives,
+          k-d tree pruning under Lipschitz certificates, and manifold domains past
+          <i>D</i>&#8202;=&#8202;12 where the effective dimension is below the ambient one.</p>
+          <ul class="links">
+            <li><a href="https://docs.rs/space-filling">docs.rs &#8599;</a></li>
+            <li><a href="https://github.com/FredericaBernkastel/space-filling">Source &#8599;</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Building</span>
+          <span>Rust library</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">contrapunctus</h3>
+          <p>The reference implementation of "Contrapunctus: Counterpoint is a regular language" whitepaper. 
+            The pair automaton and its reachability closure, harmonic
+            automaton, layered-DAG realiser with exact path counting, stretto capacity by
+            maximum clique, and the ten-line form grammar. Exact arithmetic over finite sets
+            throughout.</p>
+          <ul class="links">
+            <li"><a href="#" style="color: maroon">Closed source</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Building</span>
+          <span>Rust binary</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">contrapunctus-ui</h3>
+          <p>User interface on top of "contrapunctus" library.</p>
+          <ul class="links">
+            <li"><a href="#" style="color: maroon">Closed source</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status is-open">Open</span>
+          <span>Questions</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title">A design objective that is harmonic</h3>
+          <p>Capacity ranks subjects and cannot design one: both surviving rules need a
+          perfect consonance to fire, and a fugal answer lies at the fifth, so the measure
+          penalises the very interval the form is built on. Optimising a contour against it
+          yields a monotone. What replaces it has to be harmonic, and that is open.</p>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status is-open">Open</span>
+          <span>Questions</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title">Orientation, and the factor of &#954;<sup>N</sup></h3>
+          <p>The present greedy step never optimizes orientation, and leaves a factor of
+          &#954;<sup>N</sup> of placed volume unclaimed &mdash; a factor of five already for
+          a shape of aspect 1:2 in a 2&#215;1 region. The repair is a configuration-space
+          lift, so that pose and position are optimized together rather than one after the
+          other.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <h2 class="rubric"><span>About</span></h2>
+    <div class="row">
+      <div class="rail"><span>Contact</span></div>
+      <div class="about-body">
+        <dl class="contact">
+          <dt>Email</dt><dd><a href="mailto:bernkastel.frederica@protonmail.com">bernkastel.frederica@protonmail.com</a></dd>
+          <dt>GitHub</dt><dd><a href="https://github.com/FredericaBernkastel">FredericaBernkastel</a></dd>
+          <dt>Feed</dt><dd><a href="feed.xml">feed.xml</a></dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ============================ ARTICLE ============================ -->
+<main class="view site-main" data-view="article" hidden>
+<div class="wrap">
+  <div class="article">
+    <div><a class="back" href="#" data-goto="index">&#8592;&#8194;Index</a></div>
+
+    <article class="prose">
+      <h1 class="article-title">Contrapunctus: Counterpoint is a regular language</h1>
+      <p class="article-sub">Fugue on the lattice: 73 states, a clique, and what Bach says
+      about the rulebook.</p>
+      <div class="byline">
+        <span>Whitepaper</span>
+        <span>2026</span>
+        <span>Draft</span>
+        <a href="https://github.com/FredericaBernkastel/contrapunctus-whitepaper">Repository &#8599;</a>
+      </div>
+
+      <p class="lede">Machine composition of fugue is usually attempted in one of two
+      categories: fitting a model to a corpus, or searching a continuous relaxation of the
+      score. Both are the wrong category. Fugue is a word problem over a finite alphabet
+      under constraints of bounded memory, so the natural instruments are automata, dynamic
+      programming and exact combinatorial search &mdash; none of which require training data,
+      and all of which return proofs instead of samples.</p>
+
+      <h2>The argument opens as a post-mortem</h2>
+      <p>An earlier attempt, <em>ricercar</em>, modelled counterpoint as a
+      Lipschitz-certifiable roughness field over a continuum of entry placements. Its own
+      measurements refute it. The legal region proved piecewise constant at the note grid,
+      and rounding a certified placement onto the semitone grid costs about ten times the
+      margin the certificate establishes &mdash; so the proof was taken over the wrong set.
+      Everything expensive in that approach existed to bound a function whose answer is
+      constant on a lattice.</p>
+
+      <h2>The state is the interval plus what you owe</h2>
+      <p>A slice presents each pair of voices with a letter drawn from an alphabet of 4800.
+      The state carries the vertical interval together with eight obligation bits &mdash;
+      resolve a suspension in either voice, recover a leap up or down in either voice, leave
+      a passing note in either voice:</p>
+
+      <div class="math-block">
+        $$Q=(\mathcal{W}\cup\lbrace \bot\rbrace )\times 2^{O},\qquad |O|=8,\qquad |Q|=5\cdot 256=1280$$
+      </div>
+
+      <p>Only 73 of those are reachable, and once an obligation dies with the dissonance that
+      incurred it, the count is derivable rather than merely enumerable. Nine because each
+      voice owes up, down, or nothing; five because a dissonance owes at most one of
+      <em>suspension resolves below</em>, <em>above</em>, <em>passing note leaves below</em>,
+      <em>above</em>, or nothing. Forty-five of the 256 obligation sets occur at all.</p>
+
+      <div class="math-block">
+        $$\underbrace{1}_{\text{start}}+\underbrace{3\cdot 9}_{\text{consonant}\times\text{leap debts}}+\underbrace{5\cdot 9}_{\text{dissonance readings}\times\text{leap debts}}=73$$
+      </div>
+
+      <p>Finiteness is not an approximation. Strict counterpoint requires debts settled on
+      the next event, so no state carries history beyond one slice. The automaton
+      distinguishes a prepared suspension from the same interval struck on the same beat
+      &mdash; a distinction a field over instantaneous pitch is structurally unable to draw,
+      and the device most of the repertoire worth imitating is built from.</p>
+
+      <h2>Stretto is a clique</h2>
+      <p>Densest stretto is not a search over the score but a question about the subject
+      alone. Put a vertex at every placement on the shift group and an edge where the pair
+      admits a legal fill; the densest stretto is then a maximum clique in a Cayley graph on
+      that group, exactly computable &mdash; where the continuous formulation of the same
+      question was abandoned at thirty minutes without a single placement.</p>
+
+      <div class="math-block">
+        $$\mathrm{cap}(\text{subject})=\frac{2|E|}{|\mathcal{S}|\,(|\mathcal{S}|-1)}$$
+      </div>
+
+      <figure class="plate">
+        <div class="plate-frame"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 545" width="1480" height="545" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" fill="#16202b" role="img" aria-label="Panel a: five statements of the BWV 867 subject on five voice lanes, entering at offsets 0, 2, 4, 6 and 8 quarters. Panel b: the same five placements as vertices of a graph; under the five-rule tier two of the ten pairs are inadmissible so the set is not a clique, and under the two-rule tier every pair is legal so it is."><text x="56.0" y="46.0" font-size="19" fill="#16202b" font-weight="700" letter-spacing="0.01em">(a)  The subject enters five times, two quarters apart</text><text x="56.0" y="71.0" font-size="13.5" fill="#5a6b7a">Bach, Well-Tempered Clavier I, BWV 867 — the five-voice hyperstretto</text><line x1="150.0" y1="104.0" x2="470.0" y2="104.0" stroke="#5a6b7a" stroke-width="1"/><line x1="150.0" y1="100.0" x2="150.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="150.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">0</text><line x1="230.0" y1="100.0" x2="230.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="230.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">2</text><line x1="310.0" y1="100.0" x2="310.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="310.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">4</text><line x1="390.0" y1="100.0" x2="390.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="390.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">6</text><line x1="470.0" y1="100.0" x2="470.0" y2="108.0" stroke="#5a6b7a" stroke-width="1"/><text x="470.0" y="92.0" font-size="12" fill="#17796b" font-weight="700" text-anchor="middle">8</text><text x="486.0" y="108.0" font-size="12" fill="#5a6b7a">entry offsets, quarters</text><rect x="138.0" y="106.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="140.0" x2="790.0" y2="140.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="144.0" font-size="13" fill="#5a6b7a" text-anchor="end">S</text><line x1="150.0" y1="108.0" x2="150.0" y2="106.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="150.0" cy="140.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 150.0 140.0)"/><line x1="155.8" y1="138.6" x2="155.8" y2="117.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="185.0" cy="118.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 185.0 118.0)"/><line x1="190.8" y1="116.6" x2="190.8" y2="95.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="220.0" cy="126.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 220.0 126.0)"/><line x1="225.8" y1="124.6" x2="225.8" y2="103.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="255.0" cy="132.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 255.0 132.0)"/><line x1="260.8" y1="130.6" x2="260.8" y2="109.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="290.0" cy="114.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 290.0 114.0)"/><line x1="295.8" y1="112.6" x2="295.8" y2="91.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="325.0" cy="122.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 325.0 122.0)"/><line x1="330.8" y1="120.6" x2="330.8" y2="99.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="360.0" cy="130.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 360.0 130.0)"/><line x1="365.8" y1="128.6" x2="365.8" y2="107.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="395.0" cy="136.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 395.0 136.0)"/><line x1="400.8" y1="134.6" x2="400.8" y2="113.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="218.0" y="180.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="214.0" x2="790.0" y2="214.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="218.0" font-size="13" fill="#5a6b7a" text-anchor="end">A1</text><line x1="230.0" y1="108.0" x2="230.0" y2="180.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="230.0" cy="214.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 230.0 214.0)"/><line x1="235.8" y1="212.6" x2="235.8" y2="191.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="265.0" cy="192.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 265.0 192.0)"/><line x1="270.8" y1="190.6" x2="270.8" y2="169.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="300.0" cy="200.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 300.0 200.0)"/><line x1="305.8" y1="198.6" x2="305.8" y2="177.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="335.0" cy="206.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 335.0 206.0)"/><line x1="340.8" y1="204.6" x2="340.8" y2="183.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="370.0" cy="188.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 370.0 188.0)"/><line x1="375.8" y1="186.6" x2="375.8" y2="165.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="405.0" cy="196.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 405.0 196.0)"/><line x1="410.8" y1="194.6" x2="410.8" y2="173.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="440.0" cy="204.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 440.0 204.0)"/><line x1="445.8" y1="202.6" x2="445.8" y2="181.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="475.0" cy="210.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 475.0 210.0)"/><line x1="480.8" y1="208.6" x2="480.8" y2="187.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="298.0" y="254.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="288.0" x2="790.0" y2="288.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="292.0" font-size="13" fill="#5a6b7a" text-anchor="end">A2</text><line x1="310.0" y1="108.0" x2="310.0" y2="254.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="310.0" cy="288.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 310.0 288.0)"/><line x1="315.8" y1="286.6" x2="315.8" y2="265.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="345.0" cy="266.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 345.0 266.0)"/><line x1="350.8" y1="264.6" x2="350.8" y2="243.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="380.0" cy="274.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 380.0 274.0)"/><line x1="385.8" y1="272.6" x2="385.8" y2="251.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="415.0" cy="280.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 415.0 280.0)"/><line x1="420.8" y1="278.6" x2="420.8" y2="257.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="450.0" cy="262.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 450.0 262.0)"/><line x1="455.8" y1="260.6" x2="455.8" y2="239.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="485.0" cy="270.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 485.0 270.0)"/><line x1="490.8" y1="268.6" x2="490.8" y2="247.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="520.0" cy="278.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 520.0 278.0)"/><line x1="525.8" y1="276.6" x2="525.8" y2="255.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="555.0" cy="284.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 555.0 284.0)"/><line x1="560.8" y1="282.6" x2="560.8" y2="261.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="378.0" y="328.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="362.0" x2="790.0" y2="362.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="366.0" font-size="13" fill="#5a6b7a" text-anchor="end">T</text><line x1="390.0" y1="108.0" x2="390.0" y2="328.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="390.0" cy="362.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 390.0 362.0)"/><line x1="395.8" y1="360.6" x2="395.8" y2="339.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="425.0" cy="340.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 425.0 340.0)"/><line x1="430.8" y1="338.6" x2="430.8" y2="317.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="460.0" cy="348.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 460.0 348.0)"/><line x1="465.8" y1="346.6" x2="465.8" y2="325.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="495.0" cy="354.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 495.0 354.0)"/><line x1="500.8" y1="352.6" x2="500.8" y2="331.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="530.0" cy="336.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 530.0 336.0)"/><line x1="535.8" y1="334.6" x2="535.8" y2="313.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="565.0" cy="344.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 565.0 344.0)"/><line x1="570.8" y1="342.6" x2="570.8" y2="321.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="600.0" cy="352.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 600.0 352.0)"/><line x1="605.8" y1="350.6" x2="605.8" y2="329.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="635.0" cy="358.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 635.0 358.0)"/><line x1="640.8" y1="356.6" x2="640.8" y2="335.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><rect x="458.0" y="402.0" width="275.0" height="68" fill="#e6f4f1"/><line x1="150.0" y1="436.0" x2="790.0" y2="436.0" stroke="#e4eaef" stroke-width="1"/><text x="132.0" y="440.0" font-size="13" fill="#5a6b7a" text-anchor="end">B</text><line x1="470.0" y1="108.0" x2="470.0" y2="402.0" stroke="#5a6b7a" stroke-width="1" stroke-dasharray="2 5"/><ellipse cx="470.0" cy="436.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 470.0 436.0)"/><line x1="475.8" y1="434.6" x2="475.8" y2="413.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="505.0" cy="414.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 505.0 414.0)"/><line x1="510.8" y1="412.6" x2="510.8" y2="391.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="540.0" cy="422.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 540.0 422.0)"/><line x1="545.8" y1="420.6" x2="545.8" y2="399.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="575.0" cy="428.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 575.0 428.0)"/><line x1="580.8" y1="426.6" x2="580.8" y2="405.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="610.0" cy="410.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 610.0 410.0)"/><line x1="615.8" y1="408.6" x2="615.8" y2="387.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="645.0" cy="418.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 645.0 418.0)"/><line x1="650.8" y1="416.6" x2="650.8" y2="395.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="680.0" cy="426.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 680.0 426.0)"/><line x1="685.8" y1="424.6" x2="685.8" y2="403.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="715.0" cy="432.0" rx="6.2" ry="4.6" fill="#16202b" transform="rotate(-20 715.0 432.0)"/><line x1="720.8" y1="430.6" x2="720.8" y2="409.0" stroke="#16202b" stroke-width="1.4" stroke-linecap="round"/><line x1="150.0" y1="500.0" x2="790.0" y2="500.0" stroke="#16202b" stroke-width="1"/><line x1="150.0" y1="500.0" x2="150.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="150.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">0</text><line x1="230.0" y1="500.0" x2="230.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="230.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">2</text><line x1="310.0" y1="500.0" x2="310.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="310.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">4</text><line x1="390.0" y1="500.0" x2="390.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="390.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">6</text><line x1="470.0" y1="500.0" x2="470.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="470.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">8</text><line x1="550.0" y1="500.0" x2="550.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="550.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">10</text><line x1="630.0" y1="500.0" x2="630.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="630.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">12</text><line x1="710.0" y1="500.0" x2="710.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="710.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">14</text><line x1="790.0" y1="500.0" x2="790.0" y2="506.0" stroke="#16202b" stroke-width="1"/><text x="790.0" y="522.0" font-size="11.5" fill="#5a6b7a" text-anchor="middle">16</text><text x="804.0" y="522.0" font-size="11.5" fill="#5a6b7a">quarters</text><text x="880.0" y="46.0" font-size="19" fill="#16202b" font-weight="700" letter-spacing="0.01em">(b)  The same five placements, under two tiers</text><text x="880.0" y="71.0" font-size="13.5" fill="#5a6b7a">vertices are placements on the shift group; an edge is a legal pair</text><line x1="1030.0" y1="188.0" x2="1108.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1030.0" y1="188.0" x2="1078.2" y2="336.3" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><line x1="1030.0" y1="188.0" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1030.0" y1="188.0" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="1078.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1108.0" y1="244.7" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1078.2" y1="336.3" x2="981.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1078.2" y1="336.3" x2="952.0" y2="244.7" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><line x1="981.8" y1="336.3" x2="952.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><circle cx="1030.0" cy="188.0" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1030.0" y="192.5" font-size="12.5" fill="#16202b" text-anchor="middle">0</text><circle cx="1108.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1108.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">2</text><circle cx="1078.2" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1078.2" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">4</text><circle cx="981.8" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="981.8" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">6</text><circle cx="952.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="952.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">8</text><line x1="1300.0" y1="188.0" x2="1378.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1348.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1300.0" y1="188.0" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1348.2" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1378.0" y1="244.7" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1348.2" y1="336.3" x2="1251.8" y2="336.3" stroke="#2e7d32" stroke-width="1.4"/><line x1="1348.2" y1="336.3" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><line x1="1251.8" y1="336.3" x2="1222.0" y2="244.7" stroke="#2e7d32" stroke-width="1.4"/><circle cx="1300.0" cy="188.0" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1300.0" y="192.5" font-size="12.5" fill="#16202b" text-anchor="middle">0</text><circle cx="1378.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1378.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">2</text><circle cx="1348.2" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1348.2" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">4</text><circle cx="1251.8" cy="336.3" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1251.8" y="340.8" font-size="12.5" fill="#16202b" text-anchor="middle">6</text><circle cx="1222.0" cy="244.7" r="17" fill="#ffffff" stroke="#16202b" stroke-width="1.5"/><text x="1222.0" y="249.2" font-size="12.5" fill="#16202b" text-anchor="middle">8</text><rect x="934.0" y="382" width="192" height="52" fill="#fdf3f2"/><text x="1030.0" y="404" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">τ<tspan dy="4" font-size="10.5">5</tspan></text><text x="1030.0" y="424.0" font-size="12.5" fill="#b3261e" text-anchor="middle">not a clique</text><rect x="1204.0" y="382" width="192" height="52" fill="#e6eee7"/><text x="1300.0" y="404" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">τ<tspan dy="4" font-size="10.5">2</tspan></text><text x="1300.0" y="424.0" font-size="12.5" fill="#2e7d32" text-anchor="middle">a clique</text><line x1="920.0" y1="468.0" x2="956.0" y2="468.0" stroke="#2e7d32" stroke-width="1.4"/><text x="964.0" y="472.0" font-size="12" fill="#5a6b7a">legal pair</text><line x1="1082.0" y1="468.0" x2="1118.0" y2="468.0" stroke="#b3261e" stroke-width="1.6" stroke-dasharray="7 5"/><text x="1126" y="472" font-size="12" fill="#5a6b7a">inadmissible under τ<tspan dy="3" font-size="9.5">5</tspan></text></svg></div>
+        <figcaption class="caption"><b>Figure 1.</b> Bach&rsquo;s five-voice hyperstretto in
+        BWV 867 and the tier that admits it. (a) Five statements at offsets
+        <b>{0, 2, 4, 6, 8}</b> quarters. (b) Under &#964;<sub>5</sub> two of the ten pairs are
+        inadmissible and the passage is not a clique; under &#964;<sub>2</sub> it is, on both
+        contested readings of the subject. A control run on the written notes rather than
+        idealised transpositions locates the fault in the rulebook, not in the model of an
+        entry.</figcaption>
+      </figure>
+
+      <p>Run as a checker over two corpora, the automaton stratifies its own five hard rules
+      into a chain of tiers. Parallel perfect consonances and direct motion to a perfect
+      consonance on a downbeat hold in both centuries at about one violation per thousand
+      slices. The melodic prohibition holds in Renaissance vocal writing and fails in Bach by
+      a factor of thirty-eight, making it repertoire-specific but not wrong. The two
+      dissonance rules fail in the very repertoire they were written for.</p>
+
+      <div class="scroll">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Hard rule</th><th>Tier</th>
+              <th class="num">Renaissance</th><th class="num">Bach, WTC I</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Parallel perfect consonances</td><td>&#964;<sub>2</sub></td><td class="num">holds</td><td class="num">holds</td></tr>
+            <tr><td>Direct motion to a perfect, on a downbeat</td><td>&#964;<sub>2</sub></td><td class="num">holds</td><td class="num">holds</td></tr>
+            <tr><td>Melodic prohibition</td><td>&#964;<sub>3</sub></td><td class="num">holds</td><td class="num">&#215;38</td></tr>
+            <tr><td>Suspension resolution</td><td>&#964;<sub>5</sub></td><td class="num">fails</td><td class="num">fails</td></tr>
+            <tr><td>Passing-note departure</td><td>&#964;<sub>5</sub></td><td class="num">fails</td><td class="num">fails</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The clique test selects that same two-rule tier a second time by an independent
+      route. Under the full five-rule tier Bach&rsquo;s hyperstretto is not a clique; under
+      the two-rule tier it is. Two tests converge on the same two rules &mdash; one counting
+      rule frequencies across two centuries, the other asking whether a single passage is
+      mutually compatible. Neither was designed to check the other, which makes the agreement
+      the strongest result here.</p>
+
+      <h2>The characteristic difficulty inverts the usual one</h2>
+      <blockquote class="pull">
+        <p>A complete search fails not by finding nothing but by finding far too much.</p>
+      </blockquote>
+
+      <p>Holding one of Bach&rsquo;s subject entries fixed and filling the remainder exactly,
+      the rulebook leaves seven to seventeen pitches open at every note, and between
+      10<sup>12</sup> and 10<sup>18</sup> complete legal fills of a three-bar span. Across
+      every combination of rulebook and plan, agreement with what Bach wrote barely moves
+      while the chance baseline nearly triples: the constraints do all of the work and the
+      objective almost none.</p>
+
+      <p>Two controls establish this. Reversing the sign of the objective scores 4.9% against
+      minimising&rsquo;s 7.8%, so the soft criteria are not noise and do point the right way.
+      Drawing from the legal set uniformly instead of optimising over it at all scores 6.9%,
+      and paired per span that difference is not significant. Using the soft tier is
+      therefore no better than ignoring it, and the draw is the endorsed mechanism &mdash;
+      realised exactly by counting paths through the DAG once and then walking it backwards.</p>
+
+<pre><span class="cm">// the legal set is a fold over the DAG, not an estimate:</span>
+<span class="cm">//     c(x) = 1 if x is a sink, else sum of c(y) over x -&gt; y</span>
+<span class="kw">pub fn</span> draw(dag: &amp;Dag, c: &amp;[u128], rng: &amp;<span class="kw">mut impl</span> Rng) -&gt; Path {
+    <span class="kw">let mut</span> x = dag.source_by_weight(c, rng);
+    <span class="kw">let mut</span> path = Path::from(x);
+
+    <span class="kw">while let</span> Some(succ) = dag.successors(x) {
+        <span class="cm">// Pr[y | x] = c(y) / c(x) — exactly uniform over L(Pi)</span>
+        x = succ.choose_weighted(rng, |&amp;y| c[y]).expect(<span class="kw">"live layer"</span>);
+        path.push(x);
+    }
+
+    path
+}</pre>
+
+      <p>The draw must be asked for rather than reached by setting the weights to zero: to a
+      shortest path a zero objective means every path ties and the first found wins, which is
+      a degenerate line and not a sample. Where taste enters is the central problem, not an
+      afterthought &mdash; and this document takes the Pareto front over the soft criteria in
+      place of a weighted sum, on the ground that no weighting in the literature is
+      defensible and Fux supplies none.</p>
+
+      <h2>Space filling, in the right category</h2>
+      <p>The space-filling work and this one share a search, not a subject. There,
+      admissibility is a signed distance and the greedy step is farthest-point insertion;
+      here, admissibility is an automaton transition and the greedy step is the next slice.
+      Both are cheap only when the admissible region can be <em>queried</em> faster than it
+      can be sampled, which is the whole engineering problem in each case.</p>
+
+      <p class="fn">Draft. This page is a layout mockup: the text above condenses the
+      whitepaper&rsquo;s abstract and formalization, and every figure, formula and measured
+      number is taken from it. The full argument, the corpus harness and the changelog of the
+      four claims it replaced are in the repository.</p>
+    </article>
+  </div>
+</div>
+</main>
+
+<script>
+/* ---- view switching ---------------------------------------------------- */
+(function(){
+  var views = document.querySelectorAll(".view");
+  function go(name, hash){
+    for(var i = 0; i < views.length; i++){
+      views[i].hidden = views[i].getAttribute("data-view") !== name;
+    }
+    var el = hash ? document.getElementById(hash) : null;
+    if(el){ el.scrollIntoView({block:"start"}); } else { window.scrollTo(0,0); }
+  }
+  document.addEventListener("click", function(e){
+    var a = e.target.closest ? e.target.closest("a[data-goto]") : null;
+    if(!a){ return; }
+    e.preventDefault();
+    var href = a.getAttribute("href") || "";
+    var hash = href.charAt(0) === "#" ? href.slice(1) : "";
+    go(a.getAttribute("data-goto"), hash);
+  });
+})();
+
+/* ---- KaTeX ------------------------------------------------------------- */
+window.addEventListener("DOMContentLoaded", function(){
+  if(typeof renderMathInElement !== "function"){ return; }
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>
