@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Alef, IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -23,6 +24,23 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+/**
+ * Native MathML draws a stretchy \underbrace from the horizontal size variants
+ * and glyph assembly the font supplies for U+23DF. Without an OpenType MATH
+ * table in scope, <math> inherits Alef, which has none, and every brace comes
+ * out at one fixed width whatever it spans. Fira Math carries 16 horizontal
+ * variants plus an assembly for U+23DF, and its Fira Sans skeleton sits beside
+ * Alef. Loaded through next/font so the URL is fingerprinted and carries the
+ * base path — a hand-written url() in CSS would 404 under a project page.
+ */
+const firaMath = localFont({
+  src: "./fonts/FiraMath-Regular.woff2",
+  variable: "--font-firamath",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s — ${site.name}` },
   description: site.description,
@@ -32,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${alef.variable} ${plexMono.variable}`}
+      className={`${alef.variable} ${plexMono.variable} ${firaMath.variable}`}
       // light only, as designed
       style={{ colorScheme: "light" }}
     >

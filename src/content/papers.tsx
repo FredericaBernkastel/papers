@@ -1,10 +1,11 @@
-import type { Paper } from "@/content/types";
+import type { Figure, Paper } from "@/content/types";
 
 const SPACE_FILLING = "https://github.com/FredericaBernkastel/space-filling";
 const INFINITE_DIMENSIONS = `${SPACE_FILLING}/blob/master/doc/publications/infinite_dimensions/readme.md`;
 const FIGURES = `${SPACE_FILLING}/blob/master/doc/publications/infinite_dimensions/figures`;
 
-const strettoFigure = {
+// annotated so `src` keeps its `/${string}` type instead of widening to string
+const strettoFigure: Omit<Figure, "caption"> = {
   src: "/img/contrapunctus-stretto.svg",
   width: 1480,
   height: 545,

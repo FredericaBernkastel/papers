@@ -1,13 +1,16 @@
 import type { NextConfig } from "next";
 
+import { normalizeBasePath } from "./src/lib/base-path";
+
 /**
  * Deployed as a static site on GitHub Pages.
  *
- * `basePath` is only needed for a project page (user.github.io/<repo>); a user
- * or custom-domain site is served from the root and wants it empty. Set
- * NEXT_PUBLIC_BASE_PATH at build time rather than hard-coding it here.
+ * A project page is served from /<repo>, a user or custom-domain site from the
+ * root. The CI workflow passes NEXT_PUBLIC_BASE_PATH from the Pages API rather
+ * than hard-coding it; the same normalisation runs in src/lib/base-path.ts, so
+ * `asset()` and this config always agree.
  */
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const basePath = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH);
 
 const nextConfig: NextConfig = {
   // static SSG: emits ./out, no server at runtime
@@ -18,7 +21,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   // next/image's optimizer needs a server; export ships the source files
   images: { unoptimized: true },
-  ...(basePath === "" ? {} : { basePath, assetPrefix: basePath }),
+  ...(basePath === "" ? {} : { basePath }),
 };
 
 export default nextConfig;

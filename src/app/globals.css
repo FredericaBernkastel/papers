@@ -18,25 +18,14 @@
   --font-sans: var(--font-alef), "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: var(--font-plex), ui-monospace, "SF Mono", Menlo, Consolas,
     monospace;
-  --font-math: "Fira Math", "STIX Two Math", "Cambria Math",
+  /* --font-firamath is injected by next/font/local; the rest are the other
+     faces that ship an OpenType MATH table, then the CSS generic */
+  --font-math: var(--font-firamath), "STIX Two Math", "Cambria Math",
     "Latin Modern Math", math;
 
   /* the rail becomes a chip row below `rail`; the icon nav collapses below `nav` */
   --breakpoint-nav: 720px;
   --breakpoint-rail: 900px;
-}
-
-/* A stretchy \underbrace is drawn from the horizontal size variants and glyph
-   assembly the font supplies for U+23DF. Without an OpenType MATH table in
-   scope, <math> inherits Alef, which has none, and every brace comes out at one
-   fixed width whatever it spans. Fira Math carries 16 horizontal variants plus
-   an assembly for U+23DF, and its Fira Sans skeleton sits beside Alef. */
-@font-face {
-  font-family: "Fira Math";
-  src: url("/fonts/FiraMath-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
 }
 
 @layer base {

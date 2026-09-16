@@ -1,5 +1,6 @@
 import { Info } from "@/components/icons";
 import type { Figure } from "@/content/types";
+import { asset } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 /**
@@ -12,7 +13,8 @@ export function Plate({ figure }: { figure: Figure }) {
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={figure.src}
+      // a bare "/img/..." would 404 under a project page's sub-path
+      src={asset(figure.src)}
       width={figure.width}
       height={figure.height}
       alt={figure.alt}

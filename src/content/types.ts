@@ -24,7 +24,8 @@ export interface Resource {
 }
 
 export interface Figure {
-  readonly src: string;
+  /** rooted in public/; `asset()` adds the deployment's base path */
+  readonly src: `/${string}`;
   readonly width: number;
   readonly height: number;
   readonly alt: string;

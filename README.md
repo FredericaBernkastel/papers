@@ -53,7 +53,28 @@ self-hosted from `public/fonts/`.
 
 ## Deploying
 
-`bun run build` emits `./out`. For a project page served from a subpath, build
-with `NEXT_PUBLIC_BASE_PATH=/<repo>`; a user or custom-domain site needs nothing.
+`.github/workflows/deploy.yml` publishes to GitHub Pages on every push to
+`master`, running the same `bun run check` gate before it builds. Enable it once
+under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+The sub-path is not hard-coded: `actions/configure-pages` reports it
+(`/papers` for this repo, `/` for a user or custom-domain site) and the workflow
+passes it as `NEXT_PUBLIC_BASE_PATH`.
+
+`next/link` applies `basePath` on its own, but nothing else does — per the
+`basePath` docs, even `next/image` needs the prefix added to `src`. So every
+hand-written path into `public/` goes through `asset()` or `resolveHref()` from
+`src/lib/base-path.ts`, and the Fira Math file is loaded with `next/font/local`
+rather than a `url()` in CSS, so Next fingerprints it and prefixes it.
+
+To reproduce a sub-path build locally:
+
+```bash
+NEXT_PUBLIC_BASE_PATH=/papers bun run build
+```
+
+On Git Bash prefix that with `MSYS_NO_PATHCONV=1`, or MSYS rewrites `/papers`
+into `C:/Program Files/Git/papers` on its way to `bun.exe` and the build dies on
+the colon.
 
 The design mockup this was built from is kept at `design/mockup.html`.

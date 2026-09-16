@@ -1,5 +1,6 @@
 import { contactIcon } from "@/components/icons";
 import { contact, site } from "@/content/site";
+import { resolveHref } from "@/lib/base-path";
 import { WRAP } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
@@ -17,21 +18,21 @@ export function SiteFooter() {
         </span>
 
         <span className="flex flex-wrap gap-1.5">
-          {contact
-            .filter((item) => item.href !== undefined)
-            .map((item) => {
-              const Icon = contactIcon[item.icon];
-              return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  aria-label={item.label}
-                  className="inline-flex items-center rounded-sm p-2 text-ink-mid transition-colors hover:bg-paper-2 hover:text-accent"
-                >
-                  <Icon size={14} aria-hidden="true" />
-                </a>
-              );
-            })}
+          {contact.map((item) => {
+            // Discord has no link to give; it is a handle, not an address
+            if (item.href === undefined) return null;
+            const Icon = contactIcon[item.icon];
+            return (
+              <a
+                key={item.label}
+                href={resolveHref(item.href)}
+                aria-label={item.label}
+                className="inline-flex items-center rounded-sm p-2 text-ink-mid transition-colors hover:bg-paper-2 hover:text-accent"
+              >
+                <Icon size={14} aria-hidden="true" />
+              </a>
+            );
+          })}
         </span>
       </div>
     </footer>

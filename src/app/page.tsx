@@ -5,6 +5,7 @@ import { WorkRow } from "@/components/work-row";
 import { papers } from "@/content/papers";
 import { contact, epigraph } from "@/content/site";
 import { work } from "@/content/work";
+import { resolveHref } from "@/lib/base-path";
 import { BODY, RAIL_GRID, WRAP } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +97,7 @@ export default function Home() {
                       shell,
                       "no-underline transition-colors hover:bg-paper-2 hover:text-accent",
                     )}
-                    href={item.href}
+                    href={resolveHref(item.href)}
                     key={item.label}
                   >
                     {inner}
