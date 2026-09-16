@@ -27,7 +27,7 @@ export const papers: readonly Paper[] = [
     year: "2026",
     kind: "whitepaper",
     formula: "fugueSentence",
-    article: "/papers/contrapunctus",
+    //article: "/papers/contrapunctus",
     summary: (
       <>
         Machine composition of fugue is usually attempted in one of two
@@ -51,8 +51,8 @@ export const papers: readonly Paper[] = [
     ],
     links: [
       {
-        kind: "repo",
-        label: "Repository",
+        kind: "read",
+        label: "Read",
         href: "https://github.com/FredericaBernkastel/contrapunctus-whitepaper",
       },
     ],

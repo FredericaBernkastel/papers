@@ -45,15 +45,25 @@ export const contact: readonly ContactItem[] = [
   { icon: "feed", label: "Feed", value: "feed.xml", href: "/feed.xml" },
 ];
 
-/**
- * Camus, The Myth of Sisyphus. Kept as separate paragraphs rather than one
- * blob so the elision reads as an elision.
- */
-export const epigraph = {
-  paragraphs: [
-    "The mind's first step is to distinguish what is true from what is false. However, as soon as thought reflects on itself, what it first discovers is a contradiction.",
-    "The cat's universe is not the universe of the anthill. The truism “All thought is anthropomorphic” has no other meaning. Likewise, the mind that aims to understand reality can consider itself satisfied only by reducing it to terms of thought.",
+export interface Epigraph {
+  /** the three runs set as one continuous paragraph, elision inline between
+      the first and second — not as separate stacked paragraphs */
+  readonly opening: string;
+  readonly middle: string;
+  readonly closing: string;
+  /** the typed rule that closes the quotation */
+  readonly rule: string;
+  readonly cite: string;
+}
+
+/** Camus, The Myth of Sisyphus. */
+export const epigraph: Epigraph = {
+  opening:
+    "The mind’s first step is to distinguish what is true from what is false. However, as soon as thought reflects on itself, what it first discovers is a contradiction.",
+  middle:
+    "The cat’s universe is not the universe of the anthill. The truism “All thought is anthropomorphic” has no other meaning. Likewise, the mind that aims to understand reality can consider itself satisfied only by reducing it to terms of thought.",
+  closing:
     "If thought were to discover in the infinite mirrors of phenomena eternal relations capable of summing them up and summing themselves up in a single principle, one could speak of an intellectual joy of which the myth of the blessed would be but a ridiculous imitation.",
-  ],
+  rule: "-".repeat(58),
   cite: "— A. Camus, The Myth of Sisyphus",
-} as const;
+};

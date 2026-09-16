@@ -1,4 +1,4 @@
-import { contactIcon, navIcon, Quote } from "@/components/icons";
+import { contactIcon, navIcon } from "@/components/icons";
 import { PaperEntry } from "@/components/paper-entry";
 import { Rubric } from "@/components/rubric";
 import { WorkRow } from "@/components/work-row";
@@ -6,10 +6,13 @@ import { papers } from "@/content/papers";
 import { contact, epigraph } from "@/content/site";
 import { work } from "@/content/work";
 import { resolveHref } from "@/lib/base-path";
-import { BODY, RAIL_GRID, WRAP } from "@/lib/styles";
+import { RAIL_GRID, WRAP } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 const SECTION = "flex flex-col scroll-mt-20 gap-7";
+// .hero-lede: font:400 12px/1.3 sans; color:--ink-soft; max-width:58ch; justify
+const LEDE =
+  "max-w-[58ch] text-justify font-sans text-[12px]/[1.3] font-normal text-ink-soft";
 
 export default function Home() {
   return (
@@ -20,32 +23,19 @@ export default function Home() {
           "flex flex-col gap-13 pt-9 pb-20 sm:pt-13 rail:gap-21",
         )}
       >
-        <section aria-label="Epigraph">
-          <figure className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 border border-rule-soft border-l-2 border-l-accent-soft bg-plate px-4 py-4.5 sm:gap-4 sm:px-6 sm:py-5.5">
-            <Quote
-              size={18}
-              aria-hidden="true"
-              className="mt-0.5 shrink-0 text-accent-soft"
-            />
-            <blockquote>
-              {epigraph.paragraphs.map((text, index) => (
-                <p
-                  key={text.slice(0, 32)}
-                  className={cn(
-                    BODY,
-                    "text-[13.5px]/[1.62] text-ink-mid",
-                    index > 0 && "mt-[0.9em]",
-                  )}
-                >
-                  {index === 1 ? <>&lt;&hellip;&gt; </> : null}
-                  {text}
-                </p>
-              ))}
-              <cite className="mt-[0.9em] block text-right font-mono text-[11.5px]/[1.5] tracking-[0.04em] text-ink-soft not-italic">
-                {epigraph.cite}
-              </cite>
-            </blockquote>
-          </figure>
+        {/* Set exactly as the mockup has it: one continuous italic run at
+            12px/1.3 in --ink-soft, held to 58ch and justified, closed by a
+            typed rule — no frame, no icon, no paragraph breaks. */}
+        <section className="flex flex-col" aria-label="Epigraph">
+          <p className={LEDE}>
+            <i>
+              {epigraph.opening} &lt;...&gt; {epigraph.middle}{" "}
+              {epigraph.closing}
+              <br />
+              {epigraph.rule} <br />
+            </i>
+          </p>
+          <p className={cn(LEDE, "text-right")}>{epigraph.cite}</p>
         </section>
 
         <section className={SECTION} id="papers">
@@ -81,7 +71,7 @@ export default function Home() {
                       aria-hidden="true"
                       className="shrink-0 text-accent"
                     />
-                    <span className="sr-only">{item.label}: </span>
+                    <span className={item.label == 'Discord' ? '' : "sr-only"}>{item.label}: </span>
                     <span>{item.value}</span>
                   </>
                 );
