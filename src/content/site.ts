@@ -32,7 +32,7 @@ export const site = {
   name: "Liserotte W.",
   role: "independent researcher",
   description:
-    "Papers and active research: counterpoint as a regular language, space filling as optimization over a compound distance field.",
+    "Papers and active research.",
 } as const;
 
 export const nav: readonly NavItem[] = [
