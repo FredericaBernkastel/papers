@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Design tokens. Everything else is a utility class in the components. */
+@theme {
+  --color-paper: #f3f5f4;
+  --color-paper-2: #e9edeb;
+  --color-plate: #ffffff;
+  --color-ink: #12211f;
+  --color-ink-mid: #475956;
+  --color-ink-soft: #7b8c88;
+  --color-rule: #d3dbd7;
+  --color-rule-soft: #e2e8e5;
+  --color-accent: #1f6f63;
+  --color-accent-soft: #a3cbc2;
+  --color-closed: #8c3b2d;
+
+  /* --font-alef / --font-plex are injected by next/font in layout.tsx */
+  --font-sans: var(--font-alef), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-plex), ui-monospace, "SF Mono", Menlo, Consolas,
+    monospace;
+  --font-math: "Fira Math", "STIX Two Math", "Cambria Math",
+    "Latin Modern Math", math;
+
+  /* the rail becomes a chip row below `rail`; the icon nav collapses below `nav` */
+  --breakpoint-nav: 720px;
+  --breakpoint-rail: 900px;
+}
+
+/* A stretchy \underbrace is drawn from the horizontal size variants and glyph
+   assembly the font supplies for U+23DF. Without an OpenType MATH table in
+   scope, <math> inherits Alef, which has none, and every brace comes out at one
+   fixed width whatever it spans. Fira Math carries 16 horizontal variants plus
+   an assembly for U+23DF, and its Fira Sans skeleton sits beside Alef. */
+@font-face {
+  font-family: "Fira Math";
+  src: url("/fonts/FiraMath-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Alef ships 400/700 and no italic, so emphasis is weight, never a faux slant */
+  em {
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}

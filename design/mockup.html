@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frederica Bernkastel</title>
+<meta name="description" content="Papers and active research: counterpoint as a regular language, space filling as optimization over a compound distance field.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<!-- Math, the way github.com actually does it.
+     GitHub's stylesheet styles `math-renderer > math > mrow`, defines no rule
+     at all for MathJax's own output wrapper, and ships no math web font. So
+     MathJax is used
+     purely to convert TeX -> MathML, and the browser's native math engine and
+     math font (STIX Two Math / Cambria Math / Latin Modern Math) do the
+     typesetting. That is why math on GitHub reads as real TeX rather than as
+     glyphs assembled into HTML boxes, and this reproduces it.
+     GitHub Pages serves static HTML and renders no math of its own, which is
+     why the converter has to be loaded explicitly here. -->
+<script>
+window.MathJax = {
+  tex: {
+    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+    inlineMath:  [["\\(", "\\)"]],
+    packages: {"[+]": ["ams"]},          /* aligned, substack, pmatrix */
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code",
+                   "annotation", "annotation-xml"]
+  },
+  startup: {
+    typeset: false,
+    pageReady: function () {
+      /* GitHub converts each expression to MathML and hands it to the browser.
+         If tex2mml is unavailable for any reason, fall back to MathJax's own
+         renderer rather than leaving bare LaTeX on the page. */
+      if (typeof MathJax.tex2mmlPromise !== "function") {
+        return MathJax.typesetPromise();
+      }
+      var jobs = [];
+
+      function convert(node, display) {
+        var d = display ? "$$" : "$";
+        var tex = node.textContent.trim();
+        /* delimiters are optional: strip them if present */
+        if (tex.slice(0, d.length) === d) { tex = tex.slice(d.length); }
+        if (tex.slice(-d.length) === d) { tex = tex.slice(0, -d.length); }
+        tex = tex.trim();
+        if (!tex) { return; }
+        node.setAttribute("data-tex", tex);  /* keep the source copy-pasteable */
+        jobs.push(
+          MathJax.tex2mmlPromise(tex, {display: display})
+            .then(function (mml) { node.innerHTML = mml; })
+            .catch(function () { /* leave the raw LaTeX visible */ })
+        );
+      }
+
+      var block = document.querySelectorAll(".formula-math, .entry-math, .math-block");
+      Array.prototype.forEach.call(block, function (n) { convert(n, true); });
+
+      var inline = document.querySelectorAll(".math-inline");
+      Array.prototype.forEach.call(inline, function (n) { convert(n, false); });
+      return Promise.all(jobs);
+    }
+  }
+};
+</script>
+<script defer id="MathJax-script"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+
+<style>
+/* ---- tokens ------------------------------------------------------------ */
+:root{
+  color-scheme: light;
+
+  --paper:       #f3f5f4;
+  --plate:       #ffffff;
+  --paper-2:     #e9edeb;
+  --ink:         #12211f;
+  --ink-mid:     #475956;
+  --ink-soft:    #7b8c88;
+  --rule:        #d3dbd7;
+  --rule-soft:   #e2e8e5;
+  --accent:      #1f6f63;
+  --accent-soft: #a3cbc2;
+
+  --sans: Alef, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --rail: 104px;
+  --gap:  32px;
+  /* measure: the reading column is 780px wide (980 wrap - 64 padding
+     - 104 rail - 32 gap), but running text is capped short of it */
+  --measure: 780px;
+}
+
+/* ---- reset ------------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:400 17px/1.7 var(--sans);
+     -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,p,ul,ol,figure,blockquote,pre,table,dl,dd{margin:0}
+ul{padding:0;list-style:none}
+a{color:inherit}
+sup{font-size:.64em;line-height:0;vertical-align:.5em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* Alef ships 400/700 only and no italic: emphasis is weight, never a faux slant */
+em{font-style:normal;font-weight:700}
+
+/* ---- shell ------------------------------------------------------------- */
+.wrap{width:100%;max-width:980px;margin:0 auto;padding:0 32px}
+.view[hidden]{display:none}
+
+.site-head{border-bottom:1px solid var(--rule)}
+.site-head .wrap{display:flex;align-items:baseline;justify-content:space-between;
+                 gap:18px 32px;flex-wrap:wrap;padding-top:26px;padding-bottom:20px}
+.wordmark{font:700 19px/1 var(--sans);letter-spacing:-.005em;
+          text-decoration:none;color:var(--ink)}
+.nav{display:flex;gap:24px;font:400 11.5px/1 var(--mono);
+     letter-spacing:.12em;text-transform:uppercase}
+.nav a{color:var(--ink-mid);text-decoration:none;padding-bottom:3px;
+       border-bottom:1px solid transparent}
+.nav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+
+.site-main .wrap{display:flex;flex-direction:column;gap:84px;
+                 padding-top:56px;padding-bottom:88px}
+.section{display:flex;flex-direction:column;gap:32px}
+
+.site-foot{border-top:1px solid var(--rule)}
+.site-foot .wrap{display:flex;justify-content:space-between;gap:14px 32px;flex-wrap:wrap;
+                 padding-top:22px;padding-bottom:40px;
+                 font:400 11.5px/1.8 var(--mono);letter-spacing:.04em;color:var(--ink-soft)}
+.site-foot a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.site-foot a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap}
+.foot-note{flex:1 0 100%;padding-top:8px}
+
+/* ---- shared grid ------------------------------------------------------- */
+.row{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:var(--gap)}
+.entry{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);
+       gap:var(--gap) var(--gap);align-items:start}
+
+.rail{display:flex;flex-direction:column;gap:5px;padding-top:8px;
+      font:400 11px/1.5 var(--mono);letter-spacing:.07em;
+      text-transform:uppercase;color:var(--ink-soft)}
+.status{display:inline-flex;align-items:baseline;gap:7px;color:var(--ink-mid)}
+.status::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;
+                background:var(--accent);transform:translateY(-1px)}
+.status.is-open::before{background:transparent;box-shadow:inset 0 0 0 1px var(--ink-soft)}
+
+/* ---- rubric ------------------------------------------------------------ */
+.rubric{display:flex;align-items:center;gap:18px;
+        font:500 11px/1 var(--mono);letter-spacing:.17em;
+        text-transform:uppercase;color:var(--ink-soft)}
+.rubric::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+/* ---- hero -------------------------------------------------------------- */
+.hero{display:flex;flex-direction:column;}
+.thesis{font:700 40px/1.2 var(--sans);letter-spacing:-.022em;
+        text-wrap:balance;max-width:19ch}
+.hero-lede{font:400 12px/1.3 var(--sans);color:var(--ink-soft);max-width:58ch; text-align: justify;}
+
+.formulas{display:flex;flex-direction:column;gap:18px;margin-top:10px}
+.formula{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);
+         gap:var(--gap);align-items:start}
+.formula-key{font:400 11px/1.5 var(--mono);letter-spacing:.07em;
+             text-transform:uppercase;color:var(--ink-soft);padding-top:24px}
+.formula-body{display:flex;flex-direction:column;gap:11px;min-width:0}
+.formula-math{overflow-x:auto;overflow-y:hidden;padding:22px 26px;
+              background:var(--plate);border:1px solid var(--rule)}
+.formula-math math{color:var(--ink)}
+
+/* ---- math font --------------------------------------------------------- */
+/* Native MathML draws a stretchy \underbrace from the horizontal size variants
+   and glyph assembly the font provides for U+23DF. With no OpenType MATH table
+   in scope the <math> element inherits Alef, the browser has exactly one brace
+   glyph and no way to stretch it, and every underbrace comes out the same width
+   whatever it spans. Fira Math carries 16 horizontal variants plus an assembly
+   for U+23DF, so each brace is sized to the expression above it; its Fira Sans
+   skeleton also sits properly beside Alef.
+   Served from fonts/ rather than inlined, so the browser caches the font
+   separately from the page. GitHub Pages serves .woff2 with the right type and
+   the directory needs no .nojekyll, since it does not begin with an underscore. */
+@font-face{
+  font-family:"Fira Math";
+  src:url("../public/fonts/FiraMath-Regular.woff2") format("woff2");
+  font-weight:400;font-style:normal;font-display:swap
+}
+math{font-family:"Fira Math","STIX Two Math","Cambria Math","Latin Modern Math",math}
+/* inline math in running prose; GitHub styles its own inline wrapper the same
+   way, so a long expression scrolls rather than stretching the line box */
+.math-inline{display:inline-block}
+.math-inline>math{overflow:auto hidden}
+.formula-math>math>mrow{padding-right:.125rem;padding-left:.125rem;}
+.gloss{font:400 14.5px/1.66 var(--sans);color:var(--ink-mid);max-width:62ch}
+.gloss cite{font-style:normal;color:var(--ink-soft)}
+
+/* ---- papers ------------------------------------------------------------ */
+.entry-body{display:flex;flex-direction:column;gap:15px;min-width:0}
+.entry-title{font:700 27px/1.3 var(--sans);letter-spacing:-.014em;text-wrap:balance}
+.entry-title a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+               text-decoration-thickness:1px;text-underline-offset:5px}
+.entry-title a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.entry-body p{font:400 16.5px/1.6 var(--sans);color:var(--ink-mid); text-align: justify;}
+
+.terms{display:flex;flex-wrap:wrap;font:400 11px/1.8 var(--mono);
+       letter-spacing:.04em;color:var(--ink-soft)}
+.terms li+li::before{content:"\00b7";padding:0 .65em;color:var(--accent-soft)}
+
+.links{display:flex;flex-wrap:wrap;gap:6px 20px;
+       font:500 11.5px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.links a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.links a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* inline formula inside a paper entry */
+.entry-math{overflow-x:auto;overflow-y:hidden;padding:18px 22px;
+            background:var(--plate);border:1px solid var(--rule)}
+.entry-math>math>mrow{padding-right:.125rem;padding-left:.125rem}
+
+/* ---- figures: full width of the content column ------------------------- */
+.plate{grid-column:1 / -1;display:flex;flex-direction:column;gap:12px;
+       margin-top:8px;min-width:0}
+.plate-frame{border:1px solid var(--rule);background:var(--plate);
+             padding:18px 20px;overflow-x:auto}
+.plate-frame > img,.plate-frame > a > img{width:100%;height:auto;min-width:660px}
+.plate-frame > a{display:block}
+.caption{font:400 10px/1.2 var(--mono);letter-spacing:.01em;color:var(--ink-soft)}
+.caption b{color:var(--ink-mid);font-weight:500}
+
+/* ---- list rows --------------------------------------------------------- */
+.list{display:flex;flex-direction:column}
+.list .row{padding:20px 0;border-top:1px solid var(--rule-soft)}
+.list .row:first-child{border-top:0;padding-top:2px}
+.row-body{display:flex;flex-direction:column;gap:9px;min-width:0}
+.row-title{font:700 17px/1.45 var(--sans)}
+.row-from{display:block;font:500 11px/1.5 var(--mono);letter-spacing:.07em;color:var(--accent);margin-bottom:4px}
+.row-title a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+             text-decoration-thickness:1px;text-underline-offset:4px}
+.row-title a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.row-body p{font:400 15.5px/1.68 var(--sans);color:var(--ink-mid); text-align: justify;}
+.stamp{font:400 11.5px/1.7 var(--mono);letter-spacing:.04em;color:var(--ink-soft);
+       font-variant-numeric:tabular-nums;padding-top:4px}
+.mono-name{font:500 15px/1.6 var(--mono);letter-spacing:-.01em;color:var(--ink)}
+
+/* ---- about ------------------------------------------------------------- */
+.about-body{display:flex;flex-direction:column;gap:14px;max-width:62ch}
+.about-body p{font:400 16.5px/1.76 var(--sans);color:var(--ink-mid)}
+.contact{display:grid;grid-template-columns:auto 1fr;gap:7px 24px;margin-top:8px;
+         font:400 12.5px/1.7 var(--mono);color:var(--ink-mid)}
+.contact dt{color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase;
+            font-size:11px;padding-top:2px}
+.contact a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.contact a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ---- article ----------------------------------------------------------- */
+.article{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:var(--gap);}
+.back{font:500 11.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+      color:var(--ink-soft);text-decoration:none;padding-top:10px;display:inline-block}
+.back:hover{color:var(--accent)}
+.prose{min-width:0;}
+.prose > p {text-align: justify;}
+.prose > *{max-width:var(--measure)}
+/* scanned, not read: these take the full 780px column */
+.prose > .math-block,
+.prose > pre,
+.prose > .scroll{max-width:none}
+.article-title{font:700 37px/1.22 var(--sans);letter-spacing:-.022em;
+               text-wrap:balance;margin-bottom:10px}
+.article-sub{font:400 18px/1.5 var(--sans);color:var(--ink-mid);margin-bottom:20px}
+.byline{display:flex;flex-wrap:wrap;gap:4px 16px;padding-bottom:22px;
+        border-bottom:1px solid var(--rule);
+        font:400 11.5px/1.7 var(--mono);letter-spacing:.05em;color:var(--ink-soft)}
+.byline a{color:var(--ink-mid);text-decoration:none;border-bottom:1px solid var(--rule)}
+.byline a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+.prose p{font:400 16px/1.6 var(--sans);margin-bottom:1.15em; }
+.prose > p:first-of-type{margin-top:26px}
+.prose p.lede{font-size:16px;color:var(--ink-mid)}
+.prose h2{font:700 21px/1.36 var(--sans);letter-spacing:-.012em;margin:2em 0 .7em}
+.prose a{text-decoration:underline;text-decoration-color:var(--accent-soft);
+         text-decoration-thickness:1px;text-underline-offset:3px}
+.prose a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+
+.prose .math-block{overflow-x:auto;overflow-y:hidden;
+                   margin:1.5em 0 1.9em;padding:20px 24px;
+                   background:var(--plate);border:1px solid var(--rule)}
+.prose .math-block>math>mrow{padding-right:.125rem;padding-left:.125rem}
+
+pre{margin:1.5em 0 1.9em;padding:18px 22px;
+    background:var(--plate);border:1px solid var(--rule);
+    overflow-x:auto;font:400 12.8px/1.72 var(--mono);color:var(--ink)}
+pre .cm{color:var(--ink-soft)}
+pre .kw{color:var(--accent)}
+
+.pull{margin:2em 0;padding:0 0 0 24px;border-left:2px solid var(--accent)}
+.pull p{font:400 19.5px/1.58 var(--sans);color:var(--ink);margin:0;text-wrap:balance}
+
+.prose .plate{grid-column:auto;max-width:none;margin:2em 0}
+
+.scroll{overflow-x:auto;margin:1.5em 0 1.9em}
+.tbl{width:100%;border-collapse:collapse;font:400 12.6px/1.5 var(--mono);
+     font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th{text-align:left;font-weight:500;font-size:10.5px;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--ink-soft);
+        padding:0 20px 9px 0;border-bottom:1px solid var(--rule)}
+.tbl td{padding:9px 20px 9px 0;border-bottom:1px solid var(--rule-soft);color:var(--ink-mid)}
+.tbl td:first-child{color:var(--ink);white-space:normal}
+.tbl .num{text-align:right;padding-right:0}
+.tbl th.num{text-align:right;padding-right:0}
+
+.fn{margin-top:2.6em;padding-top:16px;border-top:1px solid var(--rule);
+    font:400 13.5px/1.72 var(--sans);color:var(--ink-mid)}
+
+/* ---- responsive -------------------------------------------------------- */
+@media (max-width:900px){
+  .entry,.row,.article,.formula{grid-template-columns:minmax(0,1fr);gap:18px}
+  .rail{flex-direction:row;flex-wrap:wrap;gap:4px 16px;padding-top:0}
+  .stamp,.back,.formula-key{padding-top:0}
+  .site-main .wrap{gap:66px}
+  .list .row:first-child{padding-top:4px}
+  .plate{margin-top:2px}
+}
+@media (max-width:560px){
+  .wrap{padding:0 20px}
+  .thesis{font-size:29px;max-width:none}
+  .entry-title{font-size:23px}
+  .article-title{font-size:28px}
+  .article-sub{font-size:16px}
+  .nav{gap:16px;font-size:11px}
+  .site-main .wrap{padding-top:40px;gap:56px}
+  .plate-frame{padding:12px 14px}
+  .formula-math{padding:18px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="wordmark" href="#" data-goto="index">Liserotte W.</a>
+    <ul class="terms" style="margin-right: auto;">
+      <li>independent researcher</li>
+    </ul>
+    <nav class="nav">
+      <a href="#papers"   data-goto="index">Papers</a>
+      <a href="#research" data-goto="index">Active work</a>
+      <a href="#about"    data-goto="index">About</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================ INDEX ============================ -->
+<main class="view site-main" data-view="index">
+<div class="wrap">
+
+  <section class="hero">
+    <p class="hero-lede">
+      <i>
+        The mind’s first step is to distinguish what is true from what is false. However, as soon as thought reflects on itself, what it first discovers is a contradiction.
+        &lt;...&gt;
+        The cat’s universe is not the universe of the anthill. The truism “All thought is anthropomorphic” has no other meaning. Likewise, the mind that aims to understand reality can consider itself satisfied only by reducing it to terms of thought.
+        If thought were to discover in the infinite mirrors of phenomena eternal relations capable of summing them up and summing themselves up in a single principle, one could speak of an intellectual joy of which the myth of the blessed would be but a ridiculous imitation.<br>
+        ---------------------------------------------------------- <br>
+      </i>
+    </p>
+    <p class="hero-lede" style="text-align: right;">— A. Camus, The Myth of Sisyphus</p>
+  </section>
+
+  <section class="section" id="papers">
+    <h2 class="rubric"><span>Papers</span></h2>
+
+    <article class="entry">
+      <div class="rail">
+        <span class="status">Draft</span>
+        <span>2026</span>
+        <span>Whitepaper</span>
+      </div>
+      <div class="entry-body">
+        <h3 class="entry-title"><a href="#" data-goto="article">Contrapunctus: Counterpoint is a regular language</a></h3>
+        <div class="entry-math" style="font-size: small;">
+          $$
+          \begin{aligned}
+            \underbrace{
+              \mathrm{fugue}\big(
+                \underbrace{D}_{\text{material}},\;
+                \underbrace{\Lambda}_{\text{plan}},\;
+                \underbrace{\tau}_{\text{rulebook}},\;
+                \underbrace{s}_{\text{seed}}
+              \big)
+            }_{\text{sentence}}
+            \;&=\;
+            \underbrace{B}_{
+              \substack{
+                \mathrm{derive}(D,\Lambda)\\
+                \text{"symbols"}
+              }
+            }
+            \;\times\;
+            \underbrace{V}_{
+              \underbrace{
+                \begin{pmatrix}
+                  n_{1,1} & \cdots & n_{1,k_1}\\
+                  \vdots  &        & \vdots\\
+                  n_{m,1} & \cdots & n_{m,k_m}
+                \end{pmatrix}
+              }_{\text{notes per voice}}
+            }
+            \;\times\;
+            \underbrace{\mathrm{parse}(B)}_{
+              \substack{
+                \text{is sentence}\\
+                \text{grammatically}\\
+                \text{correct?}
+              }
+            }\;\times\;
+            \underbrace{\mathrm{check}_{\tau_2}(V)}_{\text{rulebook violations}}
+          \end{aligned}
+          $$
+        </div>
+        <p>
+          Machine composition of fugue is usually attempted in one of two categories: fitting a model to a corpus, or searching a continuous relaxation of the score. I argue that both are the wrong category. Fugue is a <b>word problem over a finite alphabet under constraints of bounded memory</b>, so the natural instruments are automata, dynamic programming and exact
+          combinatorial search &mdash; none of which need training data, and all of which
+          return proofs instead of samples. <b>Counterpoint</b> is a finite automaton whose state is
+          the interval together with its outstanding obligations.
+        </p>
+        <ul class="terms">
+          <li>finite automata</li><li>maximum clique</li><li>Cayley graph</li>
+          <li>layered DAG</li><li>formal grammars</li><li>counterpoint</li>
+        </ul>
+        <ul class="links">
+          <li><a href="#" data-goto="article">Read</a></li>
+          <li><a href="https://github.com/FredericaBernkastel/contrapunctus-whitepaper">Repository &#8599;</a></li>
+        </ul>
+        <figure class="plate">
+        <div class="plate-frame"><img src="../public/img/contrapunctus-stretto.svg" width="1480" height="545" alt="Panel a: five statements of the BWV 867 subject on five voice lanes, entering at offsets 0, 2, 4, 6 and 8 quarters. Panel b: the same five placements as vertices of a graph; under the five-rule tier two of the ten pairs are inadmissible so the set is not a clique, and under the two-rule tier every pair is legal so it is."></div>
+          <figcaption class="caption"><b>Figure 1.</b> The five-voice hyperstretto of BWV 867
+          and the rulebook tier that admits it. (a) Five statements of the subject at offsets
+          <b>{0, 2, 4, 6, 8}</b> quarters &mdash; an arithmetic progression, and a clique in a
+          Cayley graph on the shift group, emphatically not a Sidon set. (b) Under the full
+          five-rule tier two of the ten pairs are inadmissible and the passage is not a clique;
+          under the two-rule tier every pair is legal and it is. Two independent tests &mdash;
+          rule frequency across two centuries, and mutual compatibility in a single passage
+          &mdash; select the same two rules.</figcaption>
+      </figure>
+      </div>
+    </article>
+
+    <article class="entry">
+      <div class="rail">
+        <span class="status">Draft</span>
+        <span>2026</span>
+        <span>Report</span>
+      </div>
+      <div class="entry-body">
+        <h3 class="entry-title"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/readme.md">Beyond &#8477;<sup>N</sup>: space filling in infinite-dimensional function spaces</a></h3>
+        <ul class="terms">
+          <li>signed distance fields</li><li>Lipschitz branch-and-bound</li>
+          <li>covering numbers</li><li>Frank&#8211;Wolfe</li><li>greedy maximin</li>
+        </ul>
+        <ul class="links">
+          <li><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/readme.md">Read &#8599;</a></li>
+          <li><a href="https://github.com/FredericaBernkastel/space-filling">Repository &#8599;</a></li>
+        </ul>
+        <figure class="plate">
+          <div class="plate-frame"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/figures/fig1-readings.svg"><img alt="Figure 1. Four readings of &quot;infinite-dimensional&quot;: A the domain becomes a Hilbert ball or weighted ellipsoid; B each primitive&#x27;s boundary becomes a function; C the field itself becomes the variable, ranging over a lattice of 1-Lipschitz functions; D the field is drawn from a parametric family with a certified Lipschitz bound. A comparison table gives, for each, what is varied, where it lives, the form the gradient takes, whether the Lipschitz certificate survives, and what drives the cost." src="../public/img/fig1-readings.svg" width="1480" height="940"></a></div>
+          <figcaption class="caption"><b>Figure 2.</b> Four readings of
+          &ldquo;infinite-dimensional&rdquo;: <b>A</b> the domain becomes a Hilbert ball or
+          weighted ellipsoid; <b>B</b> each primitive&rsquo;s boundary becomes a function;
+          <b>C</b> the field itself becomes the variable; <b>D</b> the field is drawn from a
+          parametric family with a certified Lipschitz bound. The table gives, for each, what
+          is varied, where it lives, the form the gradient takes, whether the certificate
+          survives, and what drives the cost.</figcaption>
+        </figure>
+
+        <figure class="plate">
+          <div class="plate-frame"><a href="https://github.com/FredericaBernkastel/space-filling/blob/master/doc/publications/infinite_dimensions/figures/fig4-survival.svg"><img alt="Figure 4. The asymmetry at the centre of the report. (a) Farthest-first traversal, illustrated by five greedy insertions and their clearance balls, is a 2-approximation to k-center in any metric space, so the quality of the strategy is indifferent to dimension. (b) The pruning test must reach boxes of half-diagonal below delta over the summed Lipschitz constants, and the number of such boxes is exponential in N and infinite when the unit ball is non-compact; the test then remains sound but proves nothing below the root box. (c) On a compact weighted ellipsoid the entropy is polynomial in one over epsilon with the exponent set by the smoothness of the weight decay, so the ambient dimension leaves the exponent entirely." src="../public/img/fig4-survival.svg" width="1480" height="760"></a></div>
+          <figcaption class="caption"><b>Figure 3.</b> The asymmetry at the centre of the
+          report. (a) Farthest-first traversal is a 2-approximation to k-center in any metric
+          space, so the quality of the strategy is indifferent to dimension. (b) The pruning
+          test must reach boxes whose half-diagonal falls below &#948; over the summed
+          Lipschitz constants; the number of such boxes is exponential in <i>N</i> and infinite
+          when the unit ball is non-compact, so the test stays sound but proves nothing below
+          the root box. (c) On a compact weighted ellipsoid the entropy is polynomial in
+          1/&#949;, and the ambient dimension leaves the exponent entirely.</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="section" id="research">
+    <h2 class="rubric"><span>Active work</span></h2>
+    <div class="list">
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Done</span>
+          <span>Rust library</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">adaptive-distance-field</h3>
+          <p>Adaptively sampled distance fields in ℝᴺ, with Lipschitz-certified pruning.</p>
+          <ul class="links">
+            <li><a href="https://docs.rs/adaptive-distance-field/latest/adaptive_distance_field/">docs.rs &#8599;</a></li>
+            <li><a href="https://www.youtube.com/watch?v=R6c1XMGf9x8">Video lecture &#8599;</a></li>
+            <li><a href="https://github.com/FredericaBernkastel/space-filling/tree/master/adaptive-distance-field">Source &#8599;</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Active</span>
+          <span>Rust library</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">space-filling</h3>
+          <p>A library on top of "adaptive-distance-field".<br>
+          Two solvers over a compound signed distance field. <em>Argmax2D</em> maximizes
+          exactly over a bitmap in Z-order and pays quadratically for resolution; <em>GD-ADF</em>
+          climbs to a local maximum, sampling the tree in logarithmic time, at 10&#8211;100&#215;
+          less memory. Both are <i>N</i>-dimensional as of 0.6.0. Arbitrary SDF primitives,
+          k-d tree pruning under Lipschitz certificates, and manifold domains past
+          <code>D=12</code> - where the effective dimension is far below the ambient one.</p>
+          <ul class="links">
+            <li><a href="https://docs.rs/space-filling">docs.rs &#8599;</a></li>
+            <li><a href="https://github.com/FredericaBernkastel/space-filling">Source &#8599;</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status is-open">Planned</span>
+          <span>Rust binary</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">gallery-of-babel</h3>
+          <p>A user interface on top of "space-filling".</p>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Active</span>
+          <span>Rust library</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">contrapunctus</h3>
+          <p>The reference implementation of "Contrapunctus: Counterpoint is a regular language" whitepaper. 
+            The pair automaton and its reachability closure, harmonic
+            automaton, layered-DAG realiser with exact path counting, stretto capacity by
+            maximum clique, and the ten-line form grammar. Exact arithmetic over finite sets
+            throughout.</p>
+          <ul class="links">
+            <li"><a href="mailto:bernkastel.frederica@protonmail.com" style="color: maroon">Closed source</a></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status">Active</span>
+          <span>Rust binary</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title mono-name">contrapunctus-ui</h3>
+          <p>User interface on top of "contrapunctus" library.</p>
+          <ul class="links">
+            <li"><a href="mailto:bernkastel.frederica@protonmail.com" style="color: maroon">Closed source</a></li>
+          </ul>
+          <figure class="plate">
+          <div class="plate-frame"><img src="../public/img/contrapunctus-ui.webp"></div>
+        </figure>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status is-open">Open</span>
+          <span>Questions</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title"><span class="row-from">contrapunctus</span>A design objective that is harmonic</h3>
+          <p>Capacity ranks subjects and cannot design one: both surviving rules need a
+          perfect consonance to fire, and a fugal answer lies at the fifth, so the measure
+          penalises the very interval the form is built on. Optimising a contour against it
+          yields a monotone. What replaces it has to be harmonic, and that is open.</p>
+        </div>
+      </article>
+
+      <article class="row">
+        <div class="rail">
+          <span class="status is-open">Open</span>
+          <span>Questions</span>
+        </div>
+        <div class="row-body">
+          <h3 class="row-title"><span class="row-from">space-filling</span>Orientation, and the factor of &#954;<sup>N</sup></h3>
+          <p>The present greedy step never optimizes orientation, and leaves a factor of
+          &#954;<sup>N</sup> of placed volume unclaimed &mdash; a factor of five already for
+          a shape of aspect 1:2 in a 2&#215;1 region. The repair is <span class="math-inline">$\mathbb{R}^N \rtimes SO(N)$</span>  configuration-space lift, so that pose and position are optimized together rather than one after the
+          other.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <h2 class="rubric"><span>About</span></h2>
+    <div class="row">
+      <div class="rail"><span>Contact</span></div>
+      <div class="about-body">
+        <dl class="contact">
+          <dt>Email</dt><dd><a href="mailto:bernkastel.frederica@protonmail.com">bernkastel.frederica@protonmail.com</a></dd>
+          <dt>Discord</dt><dd>@liserotte</dd>
+          <dt>GitHub</dt><dd><a href="https://github.com/FredericaBernkastel">FredericaBernkastel</a></dd>
+          <dt>Feed</dt><dd><a href="feed.xml">feed.xml</a></dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ============================ ARTICLE ============================ -->
+<main class="view site-main" data-view="article" hidden>
+<div class="wrap">
+  <div class="article">
+    <div><a class="back" href="#" data-goto="index">&#8592;&#8194;Index</a></div>
+
+    <article class="prose">
+      <h1 class="article-title">Contrapunctus: Counterpoint is a regular language</h1>
+      <p class="article-sub">Fugue on the lattice: 73 states, a clique, and what Bach says
+      about the rulebook.</p>
+      <div class="byline">
+        <span>Whitepaper</span>
+        <span>2026</span>
+        <span>Draft</span>
+        <a href="https://github.com/FredericaBernkastel/contrapunctus-whitepaper">Repository &#8599;</a>
+      </div>
+
+      <p class="lede">Machine composition of fugue is usually attempted in one of two
+      categories: fitting a model to a corpus, or searching a continuous relaxation of the
+      score. Both are the wrong category. Fugue is a word problem over a finite alphabet
+      under constraints of bounded memory, so the natural instruments are automata, dynamic
+      programming and exact combinatorial search &mdash; none of which require training data,
+      and all of which return proofs instead of samples.</p>
+
+      <h2>The argument opens as a post-mortem</h2>
+      <p>An earlier attempt, <em>ricercar</em>, modelled counterpoint as a
+      Lipschitz-certifiable roughness field over a continuum of entry placements. Its own
+      measurements refute it. The legal region proved piecewise constant at the note grid,
+      and rounding a certified placement onto the semitone grid costs about ten times the
+      margin the certificate establishes &mdash; so the proof was taken over the wrong set.
+      Everything expensive in that approach existed to bound a function whose answer is
+      constant on a lattice.</p>
+
+      <h2>The state is the interval plus what you owe</h2>
+      <p>A slice presents each pair of voices with a letter drawn from an alphabet of 4800.
+      The state carries the vertical interval together with eight obligation bits &mdash;
+      resolve a suspension in either voice, recover a leap up or down in either voice, leave
+      a passing note in either voice:</p>
+
+      <div class="math-block">
+        $$Q=(\mathcal{W}\cup\lbrace \bot\rbrace )\times 2^{O},\qquad |O|=8,\qquad |Q|=5\cdot 256=1280$$
+      </div>
+
+      <p>Only 73 of those are reachable, and once an obligation dies with the dissonance that
+      incurred it, the count is derivable rather than merely enumerable. Nine because each
+      voice owes up, down, or nothing; five because a dissonance owes at most one of
+      <em>suspension resolves below</em>, <em>above</em>, <em>passing note leaves below</em>,
+      <em>above</em>, or nothing. Forty-five of the 256 obligation sets occur at all.</p>
+
+      <div class="math-block">
+        $$\underbrace{1}_{\text{start}}+\underbrace{3\cdot 9}_{\text{consonant}\times\text{leap debts}}+\underbrace{5\cdot 9}_{\text{dissonance readings}\times\text{leap debts}}=73$$
+      </div>
+
+      <p>Finiteness is not an approximation. Strict counterpoint requires debts settled on
+      the next event, so no state carries history beyond one slice. The automaton
+      distinguishes a prepared suspension from the same interval struck on the same beat
+      &mdash; a distinction a field over instantaneous pitch is structurally unable to draw,
+      and the device most of the repertoire worth imitating is built from.</p>
+
+      <h2>Stretto is a clique</h2>
+      <p>Densest stretto is not a search over the score but a question about the subject
+      alone. Put a vertex at every placement on the shift group and an edge where the pair
+      admits a legal fill; the densest stretto is then a maximum clique in a Cayley graph on
+      that group, exactly computable &mdash; where the continuous formulation of the same
+      question was abandoned at thirty minutes without a single placement.</p>
+
+      <div class="formula-math">
+        $$\mathrm{cap}(\text{subject})=\frac{2|E|}{|\mathcal{S}|\,(|\mathcal{S}|-1)}$$
+      </div>
+
+      <figure class="plate">
+        <div class="plate-frame"><img src="../public/img/contrapunctus-stretto.svg" width="1480" height="545" alt="Panel a: five statements of the BWV 867 subject on five voice lanes, entering at offsets 0, 2, 4, 6 and 8 quarters. Panel b: the same five placements as vertices of a graph; under the five-rule tier two of the ten pairs are inadmissible so the set is not a clique, and under the two-rule tier every pair is legal so it is."></div>
+        <figcaption class="caption"><b>Figure 1.</b> Bach&rsquo;s five-voice hyperstretto in
+        BWV 867 and the tier that admits it. (a) Five statements at offsets
+        <b>{0, 2, 4, 6, 8}</b> quarters. (b) Under &#964;<sub>5</sub> two of the ten pairs are
+        inadmissible and the passage is not a clique; under &#964;<sub>2</sub> it is, on both
+        contested readings of the subject. A control run on the written notes rather than
+        idealised transpositions locates the fault in the rulebook, not in the model of an
+        entry.</figcaption>
+      </figure>
+
+      <p>Run as a checker over two corpora, the automaton stratifies its own five hard rules
+      into a chain of tiers. Parallel perfect consonances and direct motion to a perfect
+      consonance on a downbeat hold in both centuries at about one violation per thousand
+      slices. The melodic prohibition holds in Renaissance vocal writing and fails in Bach by
+      a factor of thirty-eight, making it repertoire-specific but not wrong. The two
+      dissonance rules fail in the very repertoire they were written for.</p>
+
+      <div class="scroll">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Hard rule</th><th>Tier</th>
+              <th class="num">Renaissance</th><th class="num">Bach, WTC I</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Parallel perfect consonances</td><td>&#964;<sub>2</sub></td><td class="num">holds</td><td class="num">holds</td></tr>
+            <tr><td>Direct motion to a perfect, on a downbeat</td><td>&#964;<sub>2</sub></td><td class="num">holds</td><td class="num">holds</td></tr>
+            <tr><td>Melodic prohibition</td><td>&#964;<sub>3</sub></td><td class="num">holds</td><td class="num">&#215;38</td></tr>
+            <tr><td>Suspension resolution</td><td>&#964;<sub>5</sub></td><td class="num">fails</td><td class="num">fails</td></tr>
+            <tr><td>Passing-note departure</td><td>&#964;<sub>5</sub></td><td class="num">fails</td><td class="num">fails</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The clique test selects that same two-rule tier a second time by an independent
+      route. Under the full five-rule tier Bach&rsquo;s hyperstretto is not a clique; under
+      the two-rule tier it is. Two tests converge on the same two rules &mdash; one counting
+      rule frequencies across two centuries, the other asking whether a single passage is
+      mutually compatible. Neither was designed to check the other, which makes the agreement
+      the strongest result here.</p>
+
+      <h2>The characteristic difficulty inverts the usual one</h2>
+      <blockquote class="pull">
+        <p>A complete search fails not by finding nothing but by finding far too much.</p>
+      </blockquote>
+
+      <p>Holding one of Bach&rsquo;s subject entries fixed and filling the remainder exactly,
+      the rulebook leaves seven to seventeen pitches open at every note, and between
+      10<sup>12</sup> and 10<sup>18</sup> complete legal fills of a three-bar span. Across
+      every combination of rulebook and plan, agreement with what Bach wrote barely moves
+      while the chance baseline nearly triples: the constraints do all of the work and the
+      objective almost none.</p>
+
+      <p>Two controls establish this. Reversing the sign of the objective scores 4.9% against
+      minimising&rsquo;s 7.8%, so the soft criteria are not noise and do point the right way.
+      Drawing from the legal set uniformly instead of optimising over it at all scores 6.9%,
+      and paired per span that difference is not significant. Using the soft tier is
+      therefore no better than ignoring it, and the draw is the endorsed mechanism &mdash;
+      realised exactly by counting paths through the DAG once and then walking it backwards.</p>
+
+<pre><span class="cm">// the legal set is a fold over the DAG, not an estimate:</span>
+<span class="cm">//     c(x) = 1 if x is a sink, else sum of c(y) over x -&gt; y</span>
+<span class="kw">pub fn</span> draw(dag: &amp;Dag, c: &amp;[u128], rng: &amp;<span class="kw">mut impl</span> Rng) -&gt; Path {
+    <span class="kw">let mut</span> x = dag.source_by_weight(c, rng);
+    <span class="kw">let mut</span> path = Path::from(x);
+
+    <span class="kw">while let</span> Some(succ) = dag.successors(x) {
+        <span class="cm">// Pr[y | x] = c(y) / c(x) — exactly uniform over L(Pi)</span>
+        x = succ.choose_weighted(rng, |&amp;y| c[y]).expect(<span class="kw">"live layer"</span>);
+        path.push(x);
+    }
+
+    path
+}</pre>
+
+      <p>The draw must be asked for rather than reached by setting the weights to zero: to a
+      shortest path a zero objective means every path ties and the first found wins, which is
+      a degenerate line and not a sample. Where taste enters is the central problem, not an
+      afterthought &mdash; and this document takes the Pareto front over the soft criteria in
+      place of a weighted sum, on the ground that no weighting in the literature is
+      defensible and Fux supplies none.</p>
+
+      <h2>Space filling, in the right category</h2>
+      <p>The space-filling work and this one share a search, not a subject. There,
+      admissibility is a signed distance and the greedy step is farthest-point insertion;
+      here, admissibility is an automaton transition and the greedy step is the next slice.
+      Both are cheap only when the admissible region can be <em>queried</em> faster than it
+      can be sampled, which is the whole engineering problem in each case.</p>
+
+      <p class="fn">Draft. This page is a layout mockup: the text above condenses the
+      whitepaper&rsquo;s abstract and formalization, and every figure, formula and measured
+      number is taken from it. The full argument, the corpus harness and the changelog of the
+      four claims it replaced are in the repository.</p>
+    </article>
+  </div>
+</div>
+</main>
+
+<script>
+/* ---- view switching ---------------------------------------------------- */
+(function(){
+  var views = document.querySelectorAll(".view");
+  function go(name, hash){
+    for(var i = 0; i < views.length; i++){
+      views[i].hidden = views[i].getAttribute("data-view") !== name;
+    }
+    var el = hash ? document.getElementById(hash) : null;
+    if(el){ el.scrollIntoView({block:"start"}); } else { window.scrollTo(0,0); }
+  }
+  document.addEventListener("click", function(e){
+    var a = e.target.closest ? e.target.closest("a[data-goto]") : null;
+    if(!a){ return; }
+    e.preventDefault();
+    var href = a.getAttribute("href") || "";
+    var hash = href.charAt(0) === "#" ? href.slice(1) : "";
+    go(a.getAttribute("data-goto"), hash);
+  });
+})();
+</script>
+</body>
+</html>
