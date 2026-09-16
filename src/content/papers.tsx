@@ -1,3 +1,4 @@
+import { TODO_DATE } from "@/content/feed-dates";
 import type { Figure, Paper } from "@/content/types";
 
 const SPACE_FILLING = "https://github.com/FredericaBernkastel/space-filling";
@@ -26,6 +27,14 @@ export const papers: readonly Paper[] = [
     status: "draft",
     year: "2026",
     kind: "whitepaper",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "Fugue as a word problem over a finite alphabet under constraints of " +
+        "bounded memory: a 73-state obligation automaton, voices filled by " +
+        "shortest path through a layered DAG, and densest stretto as a maximum " +
+        "clique in a Cayley graph. No training data, and proofs instead of samples.",
+    },
     formula: "fugueSentence",
     //article: "/papers/contrapunctus",
     summary: (
@@ -90,6 +99,15 @@ export const papers: readonly Paper[] = [
     status: "draft",
     year: "2026",
     kind: "report",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "What survives when the domain stops being finite-dimensional. Exact " +
+        "global optimization does not, and fails for an information-theoretic " +
+        "reason no engineering repairs; greedy insertion keeps its dimension-free " +
+        "2-approximation. Weighted coordinates trade cost exponential in N for " +
+        "cost polynomial in 1/ε.",
+    },
     terms: [
       "signed distance fields",
       "Lipschitz branch-and-bound",

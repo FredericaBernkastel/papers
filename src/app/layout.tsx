@@ -4,7 +4,7 @@ import localFont from "next/font/local";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { site } from "@/content/site";
+import { site, siteUrl } from "@/content/site";
 
 import "./globals.css";
 
@@ -42,8 +42,14 @@ const firaMath = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: { default: site.name, template: `%s — ${site.name}` },
   description: site.description,
+  // autodiscovery: this is how a reader finds the feed from the page itself,
+  // and how "paste the site URL into a reader" ends up working
+  alternates: {
+    types: { "application/atom+xml": `${siteUrl}/feed.xml` },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,5 +1,18 @@
 import type { Route } from "next";
 
+import { BASE_PATH } from "@/lib/base-path";
+
+/**
+ * Absolute origin the site is served from. A feed is read off-site, in someone
+ * else's reader, so every URL inside it has to be absolute — relative links
+ * that work on the page are broken in a feed.
+ */
+const siteOrigin =
+  process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://fredericabernkastel.github.io";
+
+/** Origin plus base path: the site's real public root. */
+export const siteUrl = `${siteOrigin}${BASE_PATH}`;
+
 export interface NavItem {
   /** kept separate from the hash so the href stays a typed Route */
   readonly pathname: Route;

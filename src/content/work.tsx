@@ -1,4 +1,5 @@
 import { MathInline } from "@/components/math";
+import { TODO_DATE } from "@/content/feed-dates";
 import type { WorkItem } from "@/content/types";
 
 const SPACE_FILLING = "https://github.com/FredericaBernkastel/space-filling";
@@ -7,6 +8,13 @@ const CONTACT = "mailto:bernkastel.frederica@protonmail.com";
 export const work: readonly WorkItem[] = [
   {
     id: "adaptive-distance-field",
+    plainName: "adaptive-distance-field",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "A Rust library for adaptively sampled distance fields in N dimensions, " +
+        "with pruning certified by Lipschitz bounds rather than a tolerance.",
+    },
     name: "adaptive-distance-field",
     mono: true,
     status: "done",
@@ -40,6 +48,15 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "space-filling",
+    plainName: "space-filling",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "Two solvers over a compound signed distance field, built on " +
+        "adaptive-distance-field. Argmax2D maximizes exactly over a Z-order " +
+        "bitmap; GD-ADF climbs to a local maximum at 10-100x less memory. Both " +
+        "are N-dimensional as of 0.6.0.",
+    },
     name: "space-filling",
     mono: true,
     status: "active",
@@ -67,6 +84,12 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "gallery-of-babel",
+    plainName: "gallery-of-babel",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "A planned user interface on top of the space-filling library.",
+    },
     name: "gallery-of-babel",
     mono: true,
     status: "planned",
@@ -81,6 +104,15 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "contrapunctus",
+    plainName: "contrapunctus",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "The reference implementation of the Contrapunctus whitepaper: the pair " +
+        "automaton and its reachability closure, the harmonic automaton, the " +
+        "layered-DAG realiser with exact path counting, stretto capacity by " +
+        "maximum clique, and the ten-line form grammar. Closed source.",
+    },
     name: "contrapunctus",
     mono: true,
     status: "active",
@@ -101,6 +133,12 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "contrapunctus-ui",
+    plainName: "contrapunctus-ui",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "A user interface on top of the contrapunctus library. Closed source.",
+    },
     name: "contrapunctus-ui",
     mono: true,
     status: "active",
@@ -122,6 +160,16 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "harmonic-objective",
+    plainName: "A design objective that is harmonic",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "An open question in contrapunctus. Capacity ranks fugue subjects but " +
+        "cannot design one: both surviving rules need a perfect consonance to " +
+        "fire and a fugal answer lies at the fifth, so the measure penalises " +
+        "the very interval the form is built on. What replaces it has to be " +
+        "harmonic, and that is open.",
+    },
     name: "A design objective that is harmonic",
     mono: false,
     status: "open",
@@ -143,6 +191,16 @@ export const work: readonly WorkItem[] = [
 
   {
     id: "orientation",
+    plainName: "Orientation, and the factor of κ^N",
+    feed: {
+      published: TODO_DATE,
+      abstract:
+        "An open question in space-filling. The greedy step never optimizes " +
+        "orientation and leaves a factor of kappa^N of placed volume " +
+        "unclaimed. The repair is a configuration-space lift over R^N x SO(N), " +
+        "so that pose and position are optimized together rather than one " +
+        "after the other.",
+    },
     name: (
       <>
         Orientation, and the factor of &#954;<sup>N</sup>

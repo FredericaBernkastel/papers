@@ -9,8 +9,12 @@ import { cn } from "@/lib/utils";
 export function WorkRow({ item }: { item: WorkItem }) {
   const KindIcon = kindIcon[item.kind];
 
+  // item.id is this row's permalink: the feed links its entries to #<id>
   return (
-    <article className={cn(RAIL_GRID, "border-t border-rule-soft py-5.5")}>
+    <article
+      id={item.id}
+      className={cn(RAIL_GRID, "scroll-mt-20 border-t border-rule-soft py-5.5")}
+    >
       <Rail status={item.status} kind={item.kind} kindText={item.kindLabel} />
 
       <div

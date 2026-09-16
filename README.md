@@ -42,6 +42,41 @@ horizontal size variants to grow into and every brace renders at one fixed
 width. [Fira Math](https://github.com/firamath/firamath) supplies them and is
 self-hosted from `public/fonts/`.
 
+## Feed
+
+`/feed.xml` is an Atom feed, generated at build time by
+`src/app/feed.xml/route.ts` from the same `src/content/papers.tsx` the pages
+render. **Never hand-edit the XML** — add a paper to the content module and the
+feed follows.
+
+Three categories are published, tagged with Atom `<category>`: `paper`, `work`
+(a project) and `note` (an open question).
+
+Two fields are load-bearing and effectively permanent once published:
+
+- **`published`** — the real publication date, frozen at first appearance.
+  Nothing in the generator calls `Date.now()`: a feed stamped at build time
+  republishes its entire contents to every subscriber on every deploy.
+- **the entry `<id>`** — a `tag:` URI built from the slug, not a URL, so moving
+  to a custom domain doesn't re-notify everyone that all the old entries are
+  new. Never reuse or change one.
+
+**`updated` is the separate, honest answer to "has this changed?"** It defaults
+to `published`. Bump it when a project's status moves or a question is revised,
+and readers re-surface the entry; leave it alone for a typo fix. This is why the
+feed is Atom and not RSS 2.0 — RSS has one date and no way to say this.
+
+Work items and open questions share one id namespace (`work/`), not one per
+category, so a question that grows into a project keeps its identity and only
+its `<category>` changes. They have no page of their own, so each entry links to
+`#<id>` on the index — which is why `WorkItem.id` is the row's anchor and must
+never be renamed.
+
+To publish: give the entry a `feed: { published, abstract }`. On a `Paper` it is
+required; on a `WorkItem` it is optional, and **omitting it withholds the row
+from the feed**. Write the `abstract` for a reader — it is read with no
+surrounding page, so it has to name its own context.
+
 ## Conventions
 
 - No `any`, and no `as` assertions. Where a dependency's types are loose
