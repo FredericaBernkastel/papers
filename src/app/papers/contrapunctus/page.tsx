@@ -20,8 +20,6 @@ import {
   statusIcon,
 } from "@/components/icons";
 import { MathBlock } from "@/components/math";
-import { Plate } from "@/components/plate";
-import { strettoFigureForArticle } from "@/content/papers";
 import { BODY, MEASURE, RAIL_GRID, WRAP } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
@@ -245,7 +243,7 @@ export default function ContrapunctusPage() {
             <MathBlock k="capacity" className="my-[1.5em]" />
 
             <div className="my-[2em]">
-              <Plate figure={strettoFigureForArticle} />
+              {/*<Plate figure={strettoFigureForArticle} />*/}
             </div>
 
             <p className={P}>

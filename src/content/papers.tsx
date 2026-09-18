@@ -6,17 +6,12 @@ const INFINITE_DIMENSIONS = `${SPACE_FILLING}/blob/master/doc/publications/infin
 const FIGURES = `${SPACE_FILLING}/blob/master/doc/publications/infinite_dimensions/figures`;
 
 // annotated so `src` keeps its `/${string}` type instead of widening to string
-const strettoFigure: Omit<Figure, "caption"> = {
-  src: "/img/contrapunctus-stretto.svg",
-  width: 1480,
-  height: 545,
+const contrapunctusMap: Omit<Figure, "caption"> = {
+  src: "/img/contrapunctus-algorithm-map.svg",
+  width: 3840,
+  height: 2712,
   dense: true,
-  alt:
-    "Panel a: five statements of the BWV 867 subject on five voice lanes, " +
-    "entering at offsets 0, 2, 4, 6 and 8 quarters. Panel b: the same five " +
-    "placements as vertices of a graph; under the five-rule tier two of the ten " +
-    "pairs are inadmissible so the set is not a clique, and under the two-rule " +
-    "tier every pair is legal so it is.",
+  alt: "",
 };
 
 export const papers: readonly Paper[] = [
@@ -67,19 +62,10 @@ export const papers: readonly Paper[] = [
     ],
     figures: [
       {
-        ...strettoFigure,
+        ...contrapunctusMap,
         caption: (
           <>
-            <b>Figure 1.</b> The five-voice hyperstretto of BWV 867 and the
-            rulebook tier that admits it. (a) Five statements of the subject at
-            offsets <b>{"{0, 2, 4, 6, 8}"}</b> quarters &mdash; an arithmetic
-            progression, and a clique in a Cayley graph on the shift group,
-            emphatically not a Sidon set. (b) Under the full five-rule tier two
-            of the ten pairs are inadmissible and the passage is not a clique;
-            under the two-rule tier every pair is legal and it is. Two
-            independent tests &mdash; rule frequency across two centuries, and
-            mutual compatibility in a single passage &mdash; select the same two
-            rules.
+            <b>Figure 1.</b> From a subject to complete fugue.
           </>
         ),
       },
@@ -184,18 +170,3 @@ export const papers: readonly Paper[] = [
     ],
   },
 ];
-
-export const strettoFigureForArticle = {
-  ...strettoFigure,
-  caption: (
-    <>
-      <b>Figure 1.</b> Bach&rsquo;s five-voice hyperstretto in BWV 867 and the
-      tier that admits it. (a) Five statements at offsets{" "}
-      <b>{"{0, 2, 4, 6, 8}"}</b> quarters. (b) Under &#964;<sub>5</sub> two of
-      the ten pairs are inadmissible and the passage is not a clique; under
-      &#964;<sub>2</sub> it is, on both contested readings of the subject. A
-      control run on the written notes rather than idealised transpositions
-      locates the fault in the rulebook, not in the model of an entry.
-    </>
-  ),
-};
